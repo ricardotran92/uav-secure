@@ -42,6 +42,7 @@ class GNNConfig:
     batches_per_epoch: int
     val_samples: int
     clamp_loss: bool
+    grad_clip: float
 
 
 @dataclass

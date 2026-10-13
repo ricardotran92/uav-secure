@@ -41,7 +41,7 @@ ASSUMPTIONS = [
     "inputs are channels scaled by sqrt(P / SNR_ref) for numerical conditioning.",
     "Eq. (19) is applied with sqrt(P^max) so that the power constraint (11) holds with equality.",
     "GNN/MLP training: {batches} fresh mini-batches per epoch (random topology, UAV position and fading); "
-    "the checkpoint with the best validation rate is kept.",
+    "gradient-norm clipping at {clip}; the checkpoint with the best validation rate is kept.",
     "MLP: hidden layers {mlp}, LR {mlp_lr}; one MLP per K, since its input size depends on K.",
     "OPT: the scheme of [45] is not specified in the paper; it is replaced by projected-gradient (Adam) ascent "
     "on the sum secrecy rate with {restarts} restarts (MRT, ZF, random), {iters} iterations each.",
@@ -86,7 +86,7 @@ class ReportBuilder:
         table = pd.DataFrame([(n, paper, ours(c)) for n, paper, ours in TABLE_I],
                              columns=["Parameter", "Paper (Table I)", "This run"])
         assumptions = [a.format(hidden=c.gnn.hidden_dim, batches=c.gnn.batches_per_epoch, mlp=c.mlp.hidden_dims,
-                                mlp_lr=c.mlp.lr, restarts=c.opt.restarts, iters=c.opt.iters,
+                                mlp_lr=c.mlp.lr, clip=c.gnn.grad_clip, restarts=c.opt.restarts, iters=c.opt.iters,
                                 T=c.sac.episode_length, step=c.sac.max_step_m, arch=c.sac.net_arch,
                                 topo=c.sac.topology_seed) for a in ASSUMPTIONS]
         self.sections.append("## 1. Simulation setup\n\n" + md_table(table) +

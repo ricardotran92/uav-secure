@@ -85,6 +85,7 @@ def train_beamformer(model: Beamformer, cfg: Config, *, num_users: int, epochs: 
             loss = -sum_secrecy_rate(h, h_e, w, clamp=g.clamp_loss).mean()
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), g.grad_clip)
             optimizer.step()
             losses.append(loss.item())
 

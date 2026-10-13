@@ -28,6 +28,7 @@ gnn:
   batches_per_epoch: 20     # assumption: fresh mini-batches per epoch
   val_samples: 2048         # assumption: fixed validation set
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
+  grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption
