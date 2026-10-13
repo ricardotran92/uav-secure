@@ -61,8 +61,8 @@ def main() -> None:
     # ---- Fig. 7: learned trajectory vs exhaustive search ----
     traj = rollout(agent, env, seed=cfg.seed + 1)
     traj.to_csv(run.path("trajectory.csv"), index=False)
-    # The optimum of problem (7)-(9) optimises W and q jointly, so by default the search
-    # uses the OPT solver; the GNN-based optimum (what the SAC reward sees) is reported too.
+    # The deployment problem (23)-(25) fixes W = GNN output (eq. (24)), so by default the
+    # search uses the GNN, exactly like the SAC reward; "opt" gives the joint optimum of (7)-(9).
     search_opt = OptConfig(restarts=ev.search_opt_restarts, iters=ev.search_opt_iters, lr=cfg.opt.lr)
     beamformers = {"opt": opt_beamformer(search_opt, make_generator(cfg.seed, device)), "gnn": gnn}
     if ev.search_beamformer not in beamformers:
