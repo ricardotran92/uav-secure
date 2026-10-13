@@ -2,7 +2,8 @@
 
 State  s(t) = {(x_U, y_U), {h_k}, {h_E,k}}            (26)
 Action a(t) = (dx, dy) in [-1, 1]^2, scaled to metres  (27)-(28)
-Reward r(t) = sum secrecy rate with GNN beamforming at the new position.
+Reward r(t) = sum secrecy rate with GNN beamforming at the new position
+             (multiplied by ``reward_scale`` for training only).
 
 Ground nodes are fixed within a run (as in Fig. 7); small-scale fading is
 redrawn at every step. The position is clipped to the area (constraint (25)).
@@ -45,8 +46,10 @@ class UAVDeploymentEnv(gym.Env):
     def _observation(self) -> np.ndarray:
         # Position mapped to [-1, 1]; channels scaled exactly as the GNN sees them.
         pos = self.position / self.sys.area_size * 2 - 1
-        feats = self.beamformer.features(self._h, self._h_e, self.sys.power_max_w)
-        return np.concatenate([pos, feats.flatten().cpu().numpy()]).astype(np.float32)
+        feats = self.beamformer.features(self._h, self._h_e, self.sys.power_max_w).flatten().cpu().numpy()
+        if self.sac.obs_transform == "log":       # channel gains span decades; keep sign, compress magnitude
+            feats = np.sign(feats) * np.log1p(np.abs(feats))
+        return np.concatenate([pos, feats]).astype(np.float32)
 
     @torch.no_grad()
     def secrecy(self) -> np.ndarray:
@@ -70,7 +73,7 @@ class UAVDeploymentEnv(gym.Env):
         self.t += 1
         self._sample_channels()
         per_user = self.secrecy()
-        reward = float(per_user.sum())
+        rate = float(per_user.sum())                    # r(t) = R_sec, reported unscaled
         truncated = self.t >= self.sac.episode_length
-        info = {"position": self.position.copy(), "secrecy_rate": reward, "per_user_secrecy": per_user}
-        return self._observation(), reward, False, truncated, info
+        info = {"position": self.position.copy(), "secrecy_rate": rate, "per_user_secrecy": per_user}
+        return self._observation(), self.sac.reward_scale * rate, False, truncated, info

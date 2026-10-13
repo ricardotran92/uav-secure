@@ -12,6 +12,7 @@ sac:
   episode_length: 20
   learning_starts: 20
   buffer_size: 10000
+  eval_every_episodes: 1
 
 opt:
   restarts: 2

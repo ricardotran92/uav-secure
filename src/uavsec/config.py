@@ -68,6 +68,9 @@ class SACConfig:
     max_step_m: float
     topology_seed: int
     layout_file: str
+    obs_transform: str
+    reward_scale: float
+    eval_every_episodes: int
 
 
 @dataclass

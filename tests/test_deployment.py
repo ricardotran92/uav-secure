@@ -44,6 +44,7 @@ def test_env_episode(env):
     for t in range(5):
         obs, reward, terminated, truncated, info = env.step(np.array([1.0, 1.0], dtype=np.float32))
         assert reward >= 0 and not terminated
+        assert reward == pytest.approx(env.sac.reward_scale * info["secrecy_rate"])
         assert truncated == (t == 4)
     assert np.allclose(info["position"], [200.0, 200.0])                   # clipped to the area
 

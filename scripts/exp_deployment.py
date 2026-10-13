@@ -53,9 +53,11 @@ def main() -> None:
 
     # ---- Fig. 6: SAC training ----
     env = UAVDeploymentEnv(cfg, gnn, scenario, device, seed=cfg.seed)
-    agent, episodes = train_sac(env, cfg.sac, device, cfg.seed, log)
+    eval_env = UAVDeploymentEnv(cfg, gnn, scenario, device, seed=cfg.seed + 100)
+    agent, episodes, evaluations = train_sac(env, eval_env, cfg.sac, device, cfg.seed, log)
     agent.save(run.path("sac_model.zip"))
     episodes.to_csv(run.path("episodes.csv"), index=False)
+    evaluations.to_csv(run.path("sac_evaluations.csv"), index=False)
     plotting.save(plotting.fig6_sac(episodes), run.path("figs", "fig6_sac"))
 
     # ---- Fig. 7: learned trajectory vs exhaustive search ----
@@ -124,6 +126,8 @@ def main() -> None:
             100 * (rates["Graph-DRL"] / rates.drop(["Graph-DRL", "Exhaustive search"]).max() - 1)),
         "sac_convergence_episode": convergence_episode(episodes["episode_reward"].to_numpy()),
         "sac_final_mean_secrecy_rate": float(episodes["mean_secrecy_rate"].tail(20).mean()),
+        "sac_best_policy_episode": (int(evaluations.loc[evaluations["eval_score"].idxmax(), "episode"])
+                                    if len(evaluations) else None),
         "trajectory_steps": len(traj) - 1,
         "seed_optima": seed_optima.to_dict(orient="records"),
         **paper_metrics,
