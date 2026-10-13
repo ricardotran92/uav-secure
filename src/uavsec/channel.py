@@ -131,7 +131,7 @@ def rician_channels(sys: SystemConfig, uav: torch.Tensor, nodes: torch.Tensor,
     horizontal = delta.norm(dim=-1)                                    # (B, K)
     dist_3d = torch.sqrt(horizontal ** 2 + sys.uav_altitude ** 2)
     # The LoS direction is always geometric (3-D); only the path-loss distance is configurable.
-    pl_dist = dist_3d if sys.distance_model == "3d" else horizontal.clamp_min(1.0)
+    pl_dist = (dist_3d if sys.distance_model == "3d" else horizontal).clamp_min(sys.min_distance_m)
     axis = AXES[sys.array_axis]
     los = steering_vector(delta[..., axis] / dist_3d, sys.num_antennas, sys.antenna_spacing)
     nlos = complex_normal(los.shape, gen, uav.device)

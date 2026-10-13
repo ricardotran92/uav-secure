@@ -32,6 +32,7 @@ class SystemConfig:
     eve_distance: float
     antenna_spacing: float
     distance_model: str
+    min_distance_m: float
     array_axis: str
 
 
