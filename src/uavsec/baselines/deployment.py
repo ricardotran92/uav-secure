@@ -86,7 +86,7 @@ def heuristic_positions(users: np.ndarray, area_size: float) -> dict[str, np.nda
 
 @torch.no_grad()
 def expected_rate(positions: torch.Tensor, scenario: Scenario, model: BeamformFn, sys: SystemConfig,
-                  fading_samples: int, seed: int, chunk: int = 32768) -> tuple[torch.Tensor, torch.Tensor]:
+                  fading_samples: int, seed: int, chunk: int = 8192) -> tuple[torch.Tensor, torch.Tensor]:
     """Mean and std (over fading) of the sum secrecy rate for UAV ``positions`` (P, 2).
 
     ``model`` maps (h, h_E, P) to beamformers: a trained network or e.g. the OPT solver.

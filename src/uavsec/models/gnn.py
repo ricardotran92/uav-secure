@@ -31,9 +31,11 @@ def max_over_others(x: torch.Tensor) -> torch.Tensor:
     k = x.shape[1]
     if k == 1:
         return torch.zeros_like(x)
-    self_mask = torch.eye(k, dtype=torch.bool, device=x.device).reshape(1, k, k, 1)
-    pairwise = x.unsqueeze(1).expand(-1, k, -1, -1)            # [b, k, l, :] = x_l
-    return pairwise.masked_fill(self_mask, float("-inf")).amax(dim=2)
+    # Top-2 trick: the max over the others is the overall max, except for the node that
+    # holds it, which gets the second largest. O(K) memory instead of O(K^2).
+    top, idx = x.topk(2, dim=1)                                 # (B, 2, H)
+    node = torch.arange(k, device=x.device).reshape(1, k, 1)
+    return torch.where(node == idx[:, :1], top[:, 1:2], top[:, :1])
 
 
 class GCNLayer(nn.Module):
