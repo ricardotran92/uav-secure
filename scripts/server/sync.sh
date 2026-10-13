@@ -12,7 +12,8 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 case "${1:-}" in
   push)
-    tar -C "$ROOT" -czf - --exclude=./outputs --exclude=./source_materials --exclude=./.git \
+    # .git is included so that runs on the server record the commit they used.
+    tar -C "$ROOT" -czf - --exclude=./outputs --exclude=./source_materials \
         --exclude='__pycache__' --exclude='*.egg-info' --exclude=./.pytest_cache . \
       | ssh "$HOST" "mkdir -p $REMOTE_DIR && tar -xzf - -C $REMOTE_DIR"
     echo "pushed code to $HOST:$REMOTE_DIR"
