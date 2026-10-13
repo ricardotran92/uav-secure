@@ -88,8 +88,8 @@ scripts/server/sync.sh pull                       # fetch outputs back
   logarithm or which distance. With log10 and the 3-D distance (as printed), the rate map over the area is
   almost flat: every heuristic reaches over 90 % of the optimum, while the paper's Fig. 8 shows 39-61 %, and
   the optimum is ill-defined (about 50 m from the paper's). Reading log as the natural logarithm, with the
-  horizontal UAV-node distance, reproduces the paper's deployment results: the GNN-based optimum lies 2.8 m
-  from the paper's Fig. 7 optimum (7.2 m for the deployed GNN; 0.0 / 11.7 / 7.2 m over three seeds). The evidence is in
+  horizontal UAV-node distance, reproduces the paper's deployment results: the GNN-based optimum lies close to the paper's
+  Fig. 7 optimum (7.2 m for the deployed GNN; 0.0 / 11.7 / 7.2 m over three seeds). The evidence is in
   `scripts/study_deployment_sensitivity.py` (section 5 of the report). Table I as printed is still run as a
   reference (`outputs/runs/`, `outputs/report/`).
 - **Unspecified training details** (all in `configs/default.yaml`, marked `# assumption`; see
