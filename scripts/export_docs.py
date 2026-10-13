@@ -141,7 +141,7 @@ def history_md(h: dict, main: list[dict]) -> str:
     for r in main:
         if r["source"] in ("calibrated", "assumption"):
             out.append(f"- {TAGS[r['source']][0]} `{r['key']}` = **{fmt(r['value'])}** - {r['note']}")
-    snap = next(s for s in h["results_snapshots"] if s["id"] == "R5")
+    snap = h["results_snapshots"][[s["label"].startswith("FINAL main") for s in h["results_snapshots"]].index(True)]
     dep = snap["deployment"]
     out += ["", "**Main-profile results:**", "",
             f"- GNN {snap['convergence']['gnn_val']} vs MLP {snap['convergence']['mlp_val']} bps/Hz (validation).",

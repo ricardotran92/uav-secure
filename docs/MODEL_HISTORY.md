@@ -53,10 +53,10 @@ Updated 2026-10-14.
 
 **Main-profile results:**
 
-- GNN 10.25 +- 0.10 vs MLP 7.79 +- 0.11 bps/Hz (validation).
-- K=8, 1 W: GNN 12.14 / OPT 16.75 / MLP 8.93 bps/Hz (GNN = 72% of OPT).
-- Fig. 7 optimum (58, 142) vs paper (56, 140): **2.8 m**; SAC ends 20.0 m from the optimum.
-- Graph-DRL reaches 92.8% of the optimum, +17% over the best heuristic.
+- GNN 10.10 +- 1.57 vs MLP 7.72 +- 0.10 bps/Hz (validation).
+- K=8, 1 W: GNN 13.69 / OPT 16.18 / MLP 8.76 bps/Hz (GNN = 85% of OPT).
+- Fig. 7 optimum (62, 144) vs paper (56, 140): **7.2 m**; SAC ends 2.4 m from the optimum.
+- Graph-DRL reaches 99.0% of the optimum, +43% over the best heuristic.
 
 ## 3. Timeline of changes
 
@@ -297,7 +297,7 @@ Updated 2026-10-14.
 }
 ```
 
-### R5 - FINAL main profile (calibrated, GNN 256/50, SAC fixes)
+### R5 - Main profile v2 (calibrated, GNN 256/50, SAC fixes)
 
 ```json
 {
@@ -361,7 +361,7 @@ Updated 2026-10-14.
 }
 ```
 
-### R6 - FINAL reference profile (Table I as printed, GNN 256/50)
+### R6 - Reference profile v2 (Table I as printed, GNN 256/50)
 
 ```json
 {
@@ -400,12 +400,157 @@ Updated 2026-10-14.
 }
 ```
 
+### R7 - FINAL main profile v3 (calibrated + 20 m minimum distance, GNN 512 + cosine, tuned SAC)
+
+```json
+{
+  "after_changes": [
+    "C01-C19"
+  ],
+  "convergence": {
+    "gnn_val": "10.10 +- 1.57",
+    "mlp_val": "7.72 +- 0.10",
+    "transfer_8_to_12": "13.99 (0 epochs to 95%) vs re-training 11.12"
+  },
+  "beamforming_K8_1W": {
+    "GNN": 13.69,
+    "OPT": 16.18,
+    "MLP": 8.76,
+    "ZF": 0.26,
+    "MRT": 2.76
+  },
+  "gnn_over_opt": {
+    "K=1": 0.81,
+    "K=2": 0.86,
+    "K=4": 0.89,
+    "K=8": 0.85,
+    "K=11": 0.82,
+    "0 dBm": 0.95,
+    "20 dBm": 0.92,
+    "30 dBm": 0.85,
+    "40 dBm": 0.69
+  },
+  "paper_comparison_fig9": {
+    "fig9b_OPT_vs_power_dBm(-20,0,10,20,30,40)": {
+      "paper_approx": [
+        0,
+        1,
+        3,
+        7,
+        15,
+        28
+      ],
+      "ours": [
+        0.1,
+        1.7,
+        4.3,
+        8.8,
+        16.2,
+        27.2
+      ]
+    },
+    "fig9a_K11": {
+      "paper_approx": {
+        "GNN": 16,
+        "OPT": 18
+      },
+      "ours": {
+        "GNN": 15.3,
+        "OPT": 18.6
+      }
+    }
+  },
+  "deployment": {
+    "optimum_gnn": [
+      62,
+      144
+    ],
+    "paper_optimum": [
+      56,
+      140
+    ],
+    "optimum_distance_to_paper_m": 7.2,
+    "seed_optimum_distance_to_paper_m": [
+      0.0,
+      11.7,
+      7.2
+    ],
+    "sac_final": [
+      61.8,
+      146.3
+    ],
+    "sac_to_optimum_m": 2.4,
+    "sac_to_paper_optimum_m": 8.6,
+    "rates_bps_hz": {
+      "Graph-DRL": 24.91,
+      "Area center": 15.43,
+      "Geometric center": 17.27,
+      "Circumcenter": 17.4,
+      "Polygon centroid": 16.22,
+      "Exhaustive search": 25.17
+    },
+    "fig8_ratio_to_optimum": {
+      "ours": {
+        "Area center": 0.61,
+        "Geometric center": 0.69,
+        "Circumcenter": 0.69,
+        "Polygon centroid": 0.64
+      },
+      "paper": {
+        "Area center": 0.39,
+        "Geometric center": 0.52,
+        "Circumcenter": 0.61,
+        "Polygon centroid": 0.5
+      }
+    },
+    "graph_drl_vs_optimum_pct": 99.0,
+    "graph_drl_gain_over_best_heuristic_pct": 43.2
+  }
+}
+```
+
+### R8 - FINAL reference profile v3 (Table I as printed, same GNN/SAC settings)
+
+```json
+{
+  "after_changes": [
+    "C01-C19 except C08, C15"
+  ],
+  "convergence": {
+    "gnn_val": "24.49 +- 6.37 (unstable across seeds)",
+    "mlp_val": "22.17 +- 2.98"
+  },
+  "beamforming_K8_1W": {
+    "GNN": 35.45,
+    "OPT": 90.85,
+    "MLP": 26.23,
+    "ZF": 89.96
+  },
+  "deployment": {
+    "optimum_gnn": [
+      68,
+      168
+    ],
+    "optimum_distance_to_paper_m": 30.5,
+    "seed_optimum_distance_to_paper_m": [
+      30.5,
+      74.0,
+      48.7
+    ],
+    "sac_to_optimum_m": 85.5,
+    "graph_drl_gain_over_best_heuristic_pct": 5.3
+  },
+  "note": "Kept to show that Table I read with log10 and 3-D distance cannot reproduce Fig. 7-9 of the paper."
+}
+```
+
 ## 5. Open issues
 
-- GNN reaches only about 72% of our OPT on the calibrated model (paper: near-optimal). OPT is our own substitute for [45]; no direct comparison is possible.
-- Fig. 8 heuristics reach 67-79% of the optimum here vs 39-61% in the paper (same ordering, smaller gaps).
-- GNN at K=1 fails (no neighbours -> zero aggregate, never seen in training); MLP is better there.
-- GNN trained at 1 W does not extrapolate in transmit power (saturates at 40 dBm); the paper's GNN tracks OPT.
-- Table I reference profile: re-training beats transfer learning at K=12 (28.6 vs 25.9), unlike in the paper and in the calibrated profile.
+- GNN reaches 82-89% of our OPT across K (85% at K=8); the paper reports its GNN close to its OPT. In absolute terms our OPT matches the paper's OPT closely (Fig. 9a/9b), our GNN is about 10% below the paper's GNN.
+- GNN trained at 1 W loses ground at 40 dBm (69% of OPT); the paper's GNN keeps closer to OPT there.
+- Fig. 8: heuristics reach 61-69% of the optimum here vs 39-61% in the paper (same ordering, smaller gaps).
+- One of three GNN seeds trains worse (validation std 1.57); the deployed GNN is the best-validation seed.
+- GNN-based optimum per seed: 0.0, 11.7 and 7.2 m from the paper's optimum.
 - Eavesdropper-to-user pairing in the Fig. 7 layout is inferred; one cluster (U5/U6, E5/E6) is ambiguous.
-- Only one SAC training seed per profile. The GNN-optimum robustness check covers 3 GNN seeds (2.8, 2.8 and 8.2 m from the paper's optimum in the main run).
+- Only one SAC training seed per profile.
+- Table I reference profile (log10, 3-D distance) stays unstable and far from the paper's figures, as expected.
