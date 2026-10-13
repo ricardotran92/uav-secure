@@ -48,6 +48,8 @@ class GNNConfig:
     grad_clip: float
     lr_schedule: str
     input_transform: str
+    uav_near_user_frac: float
+    uav_near_user_std_m: float
 
 
 @dataclass

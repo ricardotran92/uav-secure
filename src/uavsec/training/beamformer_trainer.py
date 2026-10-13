@@ -37,9 +37,18 @@ def learning_rate(kind: str, cfg: Config) -> float:
 
 
 def sample_training_batch(sys: SystemConfig, batch: int, num_users: int, gen: torch.Generator,
-                          device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
+                          device: torch.device, near_user_frac: float = 0.0,
+                          near_user_std_m: float = 0.0) -> tuple[torch.Tensor, torch.Tensor]:
+    """Random layouts and fading; UAV uniform in the area, or (for a ``near_user_frac`` share of
+    the batch) Gaussian around a random user, where the deployment stage actually places it."""
     scenario = sample_scenario(sys, batch, gen, device, num_users=num_users)
     uav = sample_uav_positions(sys, batch, gen, device)
+    near = torch.rand(batch, generator=gen, device=device) < near_user_frac
+    if near.any():
+        pick = torch.randint(num_users, (batch,), generator=gen, device=device)
+        around = scenario.users[torch.arange(batch, device=device), pick]
+        around = around + near_user_std_m * torch.randn(batch, 2, generator=gen, device=device)
+        uav = torch.where(near.unsqueeze(-1), around.clamp(0.0, sys.area_size), uav)
     return channels(sys, uav, scenario, gen)
 
 
@@ -83,7 +92,8 @@ def train_beamformer(model: Beamformer, cfg: Config, *, num_users: int, epochs: 
         model.train()
         losses = []
         for _ in range(g.batches_per_epoch):
-            h, h_e = sample_training_batch(sys, g.batch_size, num_users, train_gen, device)
+            h, h_e = sample_training_batch(sys, g.batch_size, num_users, train_gen, device,
+                                           g.uav_near_user_frac, g.uav_near_user_std_m)
             w = model(h, h_e, sys.power_max_w)
             loss = -sum_secrecy_rate(h, h_e, w, clamp=g.clamp_loss).mean()
             optimizer.zero_grad(set_to_none=True)

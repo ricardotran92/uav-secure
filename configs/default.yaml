@@ -34,6 +34,8 @@ gnn:
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
   lr_schedule: constant     # assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
+  uav_near_user_frac: 0.0   # assumption: share of training samples with the UAV around a random user (rest uniform)
+  uav_near_user_std_m: 30.0 # assumption: spread (m) of those UAV positions around the user
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption
