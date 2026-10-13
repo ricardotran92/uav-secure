@@ -1,0 +1,32 @@
+# Smoke-test overrides: merge on top of default.yaml to run every pipeline in minutes.
+output_dir: outputs/quick
+
+gnn:
+  epochs: 3
+  batches_per_epoch: 2
+  batch_size: 64
+  val_samples: 128
+
+sac:
+  episodes: 3
+  episode_length: 20
+  learning_starts: 20
+  buffer_size: 10000
+
+opt:
+  restarts: 2
+  iters: 20
+
+eval:
+  test_samples: 16
+  fading_samples: 4
+  grid_step_m: 20.0
+  sweep_users: [2, 4]
+  sweep_power_dbm: [0, 30]
+  sweep_noise_w: [1.2e-13, 4.8e-13]
+  cdf_users: [4]
+  timing_users: [2, 4]
+  timing_runs: 5
+  transfer_users: 4
+  transfer_epochs: 2
+  convergence_seeds: [0]

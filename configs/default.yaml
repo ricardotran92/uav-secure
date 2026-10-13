@@ -1,0 +1,68 @@
+# Default configuration = Table I of Tang et al. (TMC 2025).
+# Values not reported in the paper are marked "assumption".
+
+seed: 0
+device: auto            # auto | cpu | cuda | cuda:0 ...
+output_dir: outputs/runs
+
+system:
+  area_size: 200.0          # m, square area [0, A] x [0, A]
+  num_users: 8              # K legitimate users (= K eavesdroppers)
+  num_antennas: 8           # N antennas at the UAV
+  uav_altitude: 100.0       # m
+  rician_factor_db: 10.0
+  bandwidth_hz: 1.0         # rates are reported in bps/Hz
+  power_max_w: 1.0          # P^max
+  noise_power_w: 1.2e-13    # sigma_0^2
+  path_loss_a_db: 30.0      # LoS path loss 30 + 22 log10(d) dB  [44]
+  path_loss_b: 22.0
+  eve_distance: 20.0        # eavesdropper "about 20 m" from its user
+  antenna_spacing: 0.5      # assumption: half-wavelength ULA
+
+gnn:
+  num_layers: 5             # D GCN layers
+  hidden_dim: 128           # assumption
+  lr: 0.005
+  epochs: 300               # "GNN train episodes"
+  batch_size: 512
+  batches_per_epoch: 20     # assumption: fresh mini-batches per epoch
+  val_samples: 2048         # assumption: fixed validation set
+  clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
+
+mlp:
+  hidden_dims: [512, 512, 512]   # assumption
+  lr: 0.001                      # assumption (0.005 diverges for the wider MLP)
+
+sac:
+  lr: 0.0003
+  episodes: 500
+  episode_length: 100       # assumption: steps per episode
+  batch_size: 64
+  buffer_size: 1000000
+  gamma: 0.99               # discount factor eta
+  tau: 0.005                # assumption: SB3 default soft-update rate
+  learning_starts: 1000     # assumption
+  net_arch: [256, 256]      # assumption
+  max_step_m: 5.0           # assumption: action [-1,1]^2 scaled to metres
+  topology_seed: 2025       # fixed user/eavesdropper layout for the run
+
+opt:                        # gradient multi-start proxy for the optimizer of [45]
+  restarts: 16
+  iters: 500
+  lr: 0.02
+
+eval:
+  test_samples: 256         # instances per sweep point
+  fading_samples: 32        # small-scale fading draws for position evaluation
+  grid_step_m: 2.0          # exhaustive deployment search resolution
+  search_refine_top: 25     # best grid points re-scored with 8x more fading draws
+  uav_position: center      # center | random  (UAV position in beamforming sweeps)
+  sweep_users: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+  sweep_power_dbm: [-20, -10, 0, 10, 20, 30, 40]
+  sweep_noise_w: [0.3e-13, 0.6e-13, 1.2e-13, 2.4e-13, 4.8e-13, 9.6e-13]
+  cdf_users: [8, 12]
+  timing_users: [2, 4, 6, 8, 10]
+  timing_runs: 400
+  transfer_users: 12
+  transfer_epochs: 100
+  convergence_seeds: [0, 1, 2]
