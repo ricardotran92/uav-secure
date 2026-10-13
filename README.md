@@ -58,6 +58,9 @@ Each command accepts `--config`, `--set key=value ...` and `--quick`.
 
 Phases 3 and 4 automatically use the GNN checkpoint of the latest Phase 2 run (or pass `--gnn path`).
 
+Main results (calibrated channel): add `--config configs/default.yaml configs/calibrated.yaml` to every command;
+they are written to `outputs/runs_calibrated/` and the report to `outputs/runs_calibrated/report/report.md`.
+
 On the server:
 
 ```bash
@@ -74,8 +77,19 @@ scripts/server/sync.sh pull                       # fetch outputs back
 - **Unreported hyper-parameters** (GNN width, steps per episode, SAC action scale, ...) are set in
   `configs/default.yaml` and marked `# assumption`.
 - **Eq. (19)** is applied with sqrt(P^max), so that the power constraint holds with equality.
-- **SNR regime.** With Table I as written (1 W, 1.2e-13 W, PL = 30 + 22 log10 d dB) the per-antenna SNR at
-  100 m is about 55 dB. In that regime, zero-forcing alone reaches far higher secrecy rates than the paper's OPT
-  curve. The paper's Fig. 9b looks consistent with an SNR about 30 dB lower (for example, a W/mW slip).
-  [`configs/paper_snr.yaml`](configs/paper_snr.yaml) re-runs everything with a 30 dB higher noise power, written to
-  `outputs/runs_paper_snr/`. The generated report states which setting each run used.
+- **Channel interpretation (main results use [`configs/calibrated.yaml`](configs/calibrated.yaml)).**
+  Every Table I value is kept. The paper writes the path loss as "30 + 22 log(d)" without saying which
+  logarithm or which distance. With log10 and the 3-D distance (as printed), the rate map over the area is
+  almost flat: every heuristic reaches over 90 % of the optimum, while the paper's Fig. 8 shows 39-61 %, and
+  the optimum is ill-defined (about 50 m from the paper's). Reading log as the natural logarithm, with the
+  horizontal UAV-node distance, reproduces the paper's deployment results: the GNN-based optimum lies 2.8 m
+  from the paper's Fig. 7 optimum (all three training seeds are within 8.2 m). The evidence is in
+  `scripts/study_deployment_sensitivity.py` (section 5 of the report). Table I as printed is still run as a
+  reference (`outputs/runs/`, `outputs/report/`).
+- **Unspecified training details** (all in `configs/default.yaml`, marked `# assumption`): GNN hidden width 256
+  with 50 fresh mini-batches per epoch (width 128 under-fits and its rate map drifts, see
+  `scripts/study_gnn_optimum.py`), gradient-norm clipping, log-compressed channel part of the SAC state,
+  SAC reward scaled by 0.1 for training (figures report the unscaled R_sec), and the best evaluated SAC
+  policy is kept.
+- **Fig. 7 optimum** is found by exhaustive search with the GNN as beamformer, because problem (23)-(25)
+  fixes W = GNN output (eq. (24)). The OPT-based optimum is reported alongside for reference.
