@@ -154,7 +154,7 @@ def fig9_sweeps(dfs: dict[str, pd.DataFrame]) -> plt.Figure:
     specs = {
         "users": ("Number of users K", "(a) vs number of users"),
         "power": ("Transmit power (dBm)", "(b) vs transmit power"),
-        "noise": ("Noise power (×1e-13 W)", "(c) vs noise power"),
+        "noise": ("Noise power (W, log scale)", "(c) vs noise power"),
     }
     present = [k for k in specs if k in dfs]
     fig, axes = plt.subplots(1, len(present), figsize=(4.4 * len(present), 3.6), squeeze=False)
@@ -165,6 +165,8 @@ def fig9_sweeps(dfs: dict[str, pd.DataFrame]) -> plt.Figure:
                         marker=METHOD_MARKERS.get(method, "o"), capsize=2, elinewidth=0.8, label=method)
         xlabel, title = specs[key]
         ax.set(xlabel=xlabel, ylabel="Sum secrecy rate (bps/Hz)", title=title)
+        if key == "noise":
+            ax.set_xscale("log")
     axes[0][0].legend()
     fig.suptitle("GNN trained once at the default setting, applied without retraining", fontsize=10, color=MUTED)
     fig.tight_layout()

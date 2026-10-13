@@ -77,5 +77,5 @@ scripts/server/sync.sh pull                       # fetch outputs back
 - **SNR regime.** With Table I as written (1 W, 1.2e-13 W, PL = 30 + 22 log10 d dB) the per-antenna SNR at
   100 m is about 55 dB. In that regime, zero-forcing alone reaches far higher secrecy rates than the paper's OPT
   curve. The paper's Fig. 9b looks consistent with an SNR about 30 dB lower (for example, a W/mW slip).
-  To check this sensitivity, run with `--set system.noise_power_w=1.2e-10`.
-  The generated report states which setting each run used.
+  [`configs/paper_snr.yaml`](configs/paper_snr.yaml) re-runs everything with a 30 dB higher noise power, written to
+  `outputs/runs_paper_snr/`. The generated report states which setting each run used.

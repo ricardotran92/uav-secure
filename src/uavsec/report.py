@@ -123,12 +123,14 @@ class ReportBuilder:
         parts = ["## 3. Beamforming benchmarks (Fig. 9, Fig. 10, Fig. 11)\n",
                  self.figure(plotting.fig9_sweeps({s: d for s, d in plotted.groupby("sweep")}), "fig9_sweeps",
                              "Fig. 9 - mean sum secrecy rate (error bars: std over test instances)")]
-        labels = {"users": "K", "power": "P (dBm)", "noise": "noise (x1e-13 W)"}
+        labels = {"users": "K", "power": "P (dBm)", "noise": "noise (W)"}
         for sweep, df in sweeps.groupby("sweep", sort=False):
             pivot = df.pivot_table(index="value", columns="method", values="rate_mean")
             pivot = pivot[[c for c in (*PAPER_METHODS, "ZF", "MRT") if c in pivot]]
             pivot["GNN/OPT"] = pivot["GNN"] / pivot["OPT"]
-            pivot = pivot.reset_index().rename(columns={"value": labels.get(sweep, sweep)})
+            pivot = pivot.reset_index()
+            pivot["value"] = pivot["value"].map(lambda v: f"{v:.2e}" if sweep == "noise" else f"{v:g}")
+            pivot = pivot.rename(columns={"value": labels.get(sweep, sweep)})
             parts.append(f"**Sweep: {sweep}** (sum secrecy rate, bps/Hz; ZF/MRT are extra closed-form references)\n\n"
                          + md_table(pivot, ".2f"))
         stats = cdf.groupby(["num_users", "method"])["rate"].describe(percentiles=[0.1, 0.5, 0.9])

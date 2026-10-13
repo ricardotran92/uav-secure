@@ -1,0 +1,12 @@
+# Sensitivity study: noise power 30 dB above Table I.
+# With Table I as printed, the per-antenna SNR at 100 m is ~55 dB and zero-forcing
+# alone far exceeds the paper's OPT curve; the paper's Fig. 9b is consistent with an
+# SNR ~30 dB lower (e.g. a W/mW slip). Merge on top of default.yaml:
+#   python scripts/exp_convergence.py --config configs/default.yaml configs/paper_snr.yaml
+output_dir: outputs/runs_paper_snr
+
+system:
+  noise_power_w: 1.2e-10
+
+eval:
+  sweep_noise_w: [0.3e-10, 0.6e-10, 1.2e-10, 2.4e-10, 4.8e-10, 9.6e-10]

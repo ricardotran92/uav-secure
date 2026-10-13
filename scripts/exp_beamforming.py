@@ -70,7 +70,7 @@ def main() -> None:
         log.info("power %.0f dBm done", p_dbm)
     for noise in ev.sweep_noise_w:
         rows += summarize(evaluator.rates(*evaluator.instances(k0, noise_power_w=noise), sys.power_max_w),
-                          "noise", noise / 1e-13)
+                          "noise", noise)
         log.info("noise %.2e W done", noise)
     sweeps = pd.DataFrame(rows)
     sweeps.to_csv(run.path("sweeps.csv"), index=False)
