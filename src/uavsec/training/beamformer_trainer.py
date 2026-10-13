@@ -24,11 +24,11 @@ def build_model(kind: str, cfg: Config, num_users: int | None = None) -> Beamfor
     """Create a GNN or MLP beamformer from the config (``num_users`` only matters for the MLP)."""
     sys = cfg.system
     if kind == "gnn":
-        return SecureBeamGNN(sys.num_antennas, reference_snr(sys),
-                             hidden_dim=cfg.gnn.hidden_dim, num_layers=cfg.gnn.num_layers)
+        return SecureBeamGNN(sys.num_antennas, reference_snr(sys), hidden_dim=cfg.gnn.hidden_dim,
+                             num_layers=cfg.gnn.num_layers, input_transform=cfg.gnn.input_transform)
     if kind == "mlp":
-        return MLPBeamformer(sys.num_antennas, reference_snr(sys),
-                             num_users=num_users or sys.num_users, hidden_dims=cfg.mlp.hidden_dims)
+        return MLPBeamformer(sys.num_antennas, reference_snr(sys), num_users=num_users or sys.num_users,
+                             hidden_dims=cfg.mlp.hidden_dims, input_transform=cfg.gnn.input_transform)
     raise ValueError(f"unknown model kind {kind!r}")
 
 

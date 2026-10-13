@@ -46,6 +46,7 @@ class GNNConfig:
     val_samples: int
     clamp_loss: bool
     grad_clip: float
+    input_transform: str
 
 
 @dataclass
