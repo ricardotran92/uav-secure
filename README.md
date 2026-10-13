@@ -89,13 +89,14 @@ scripts/server/sync.sh pull                       # fetch outputs back
   almost flat: every heuristic reaches over 90 % of the optimum, while the paper's Fig. 8 shows 39-61 %, and
   the optimum is ill-defined (about 50 m from the paper's). Reading log as the natural logarithm, with the
   horizontal UAV-node distance, reproduces the paper's deployment results: the GNN-based optimum lies 2.8 m
-  from the paper's Fig. 7 optimum (all three training seeds are within 8.2 m). The evidence is in
+  from the paper's Fig. 7 optimum (7.2 m for the deployed GNN; 0.0 / 11.7 / 7.2 m over three seeds). The evidence is in
   `scripts/study_deployment_sensitivity.py` (section 5 of the report). Table I as printed is still run as a
   reference (`outputs/runs/`, `outputs/report/`).
-- **Unspecified training details** (all in `configs/default.yaml`, marked `# assumption`): GNN hidden width 256
-  with 50 fresh mini-batches per epoch (width 128 under-fits and its rate map drifts, see
-  `scripts/study_gnn_optimum.py`), gradient-norm clipping, log-compressed channel part of the SAC state,
-  SAC reward scaled by 0.1 for training (figures report the unscaled R_sec), and the best evaluated SAC
-  policy is kept.
+- **Unspecified training details** (all in `configs/default.yaml`, marked `# assumption`; see
+  [docs/PARAMETERS.md](docs/PARAMETERS.md)): GNN hidden width 512 with 50 fresh mini-batches per episode and a
+  cosine learning-rate schedule that starts at the Table I value 0.005; gradient-norm clipping; SAC with 2 gradient
+  steps per environment step, 2.5 m maximum move, 175 steps per episode, log-compressed channel state, reward
+  scaled by 0.1 for training only, and the best policy over 3-episode evaluations kept. The calibrated profile also
+  clamps the horizontal path-loss distance at 20 m.
 - **Fig. 7 optimum** is found by exhaustive search with the GNN as beamformer, because problem (23)-(25)
   fixes W = GNN output (eq. (24)). The OPT-based optimum is reported alongside for reference.
