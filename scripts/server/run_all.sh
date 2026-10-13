@@ -10,7 +10,8 @@ cd "$(dirname "$0")/../.."
 # shellcheck disable=SC1091
 source "${CONDA_DIR:-$HOME/miniforge3}/etc/profile.d/conda.sh"
 conda activate "${ENV_NAME:-uavsec}"
-pip install -q -e . --no-deps
+# Install only when missing: concurrent runs must not reinstall the package at the same time.
+python -c "import uavsec" 2>/dev/null || pip install -q -e . --no-deps
 export CUDA_VISIBLE_DEVICES="${GPU:-2}"
 
 python -m pytest -q
