@@ -69,6 +69,9 @@ def train_beamformer(model: Beamformer, cfg: Config, *, num_users: int, epochs: 
     sys, g = cfg.system, cfg.gnn
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    # The paper gives the learning rate (0.005) but no schedule; "cosine" starts there and decays to 1%.
+    scheduler = (torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(1, epochs), eta_min=0.01 * lr)
+                 if g.lr_schedule == "cosine" else None)
     train_gen = make_generator(seed, device)
     val_h, val_he = sample_training_batch(sys, g.val_samples, num_users,
                                           make_generator(seed + 10_000, device), device)
@@ -89,6 +92,8 @@ def train_beamformer(model: Beamformer, cfg: Config, *, num_users: int, epochs: 
             optimizer.step()
             losses.append(loss.item())
 
+        if scheduler is not None:
+            scheduler.step()
         val = evaluate_rate(model, val_h, val_he, sys.power_max_w).mean().item()
         history.train_loss.append(sum(losses) / len(losses))
         history.val_rate.append(val)

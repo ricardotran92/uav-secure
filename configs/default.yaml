@@ -32,6 +32,7 @@ gnn:
   val_samples: 2048         # assumption: fixed validation set
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
+  lr_schedule: constant     # assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption
@@ -53,6 +54,8 @@ sac:
   obs_transform: log        # assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)
   reward_scale: 0.1         # assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec
   eval_every_episodes: 10   # assumption: deterministic evaluation interval; the best policy is kept
+  eval_episodes: 1          # assumption: deterministic episodes averaged per evaluation
+  gradient_steps: 1         # assumption: SAC gradient updates per environment step
 
 opt:                        # gradient multi-start proxy for the optimizer of [45]
   restarts: 16

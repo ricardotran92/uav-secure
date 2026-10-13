@@ -53,10 +53,11 @@ class BestPolicyCallback(BaseCallback):
     keep the policy whose UAV settles at the highest secrecy rate (mean of the last 20% of steps).
     """
 
-    def __init__(self, eval_env: UAVDeploymentEnv, every: int, seed: int,
+    def __init__(self, eval_env: UAVDeploymentEnv, every: int, seed: int, episodes: int = 1,
                  logger: logging.Logger | None = None) -> None:
         super().__init__()
         self.eval_env, self.every, self.seed, self._log = eval_env, every, seed, logger
+        self.episodes = episodes
         self.records: list[dict] = []
         self.best_score = float("-inf")
         self._best_state: dict | None = None
@@ -70,9 +71,13 @@ class BestPolicyCallback(BaseCallback):
         return True
 
     def _evaluate(self) -> None:
-        traj = rollout(self.model, self.eval_env, seed=self.seed)
-        score = float(traj["secrecy_rate"].tail(max(1, len(traj) // 5)).mean())
-        x, y = traj[["x", "y"]].to_numpy()[-1]
+        scores, ends = [], []
+        for i in range(self.episodes):          # different fading per episode, same start
+            traj = rollout(self.model, self.eval_env, seed=self.seed + i)
+            scores.append(traj["secrecy_rate"].tail(max(1, len(traj) // 5)).mean())
+            ends.append(traj[["x", "y"]].to_numpy()[-1])
+        score = float(np.mean(scores))
+        x, y = np.mean(ends, axis=0)
         self.records.append({"episode": self._episodes, "eval_score": score, "end_x": x, "end_y": y})
         if score > self.best_score:
             self.best_score = score
@@ -95,10 +100,11 @@ def train_sac(env: UAVDeploymentEnv, eval_env: UAVDeploymentEnv, cfg: SACConfig,
     model = SAC(
         "MlpPolicy", env, learning_rate=cfg.lr, buffer_size=cfg.buffer_size,
         learning_starts=cfg.learning_starts, batch_size=cfg.batch_size, tau=cfg.tau, gamma=cfg.gamma,
+        gradient_steps=cfg.gradient_steps,
         policy_kwargs={"net_arch": list(cfg.net_arch)}, seed=seed, device=device, verbose=0,
     )
     episodes = EpisodeLogger(logger)
-    best = BestPolicyCallback(eval_env, cfg.eval_every_episodes, seed + 1, logger)
+    best = BestPolicyCallback(eval_env, cfg.eval_every_episodes, seed + 1, cfg.eval_episodes, logger)
     model.learn(total_timesteps=cfg.episodes * cfg.episode_length, callback=[episodes, best])
     best.restore_best()
     return model, episodes.frame(), best.frame()

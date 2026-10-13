@@ -46,6 +46,7 @@ class GNNConfig:
     val_samples: int
     clamp_loss: bool
     grad_clip: float
+    lr_schedule: str
 
 
 @dataclass
@@ -71,6 +72,8 @@ class SACConfig:
     obs_transform: str
     reward_scale: float
     eval_every_episodes: int
+    gradient_steps: int
+    eval_episodes: int
 
 
 @dataclass
@@ -118,6 +121,8 @@ class Config:
             raise ValueError(f"system.distance_model must be '3d' or 'horizontal', got {self.system.distance_model!r}")
         if self.system.path_loss_log not in ("log10", "ln"):
             raise ValueError(f"system.path_loss_log must be 'log10' or 'ln', got {self.system.path_loss_log!r}")
+        if self.gnn.lr_schedule not in ("constant", "cosine"):
+            raise ValueError(f"gnn.lr_schedule must be 'constant' or 'cosine', got {self.gnn.lr_schedule!r}")
         if self.system.array_axis not in ("x", "y"):
             raise ValueError(f"system.array_axis must be 'x' or 'y', got {self.system.array_axis!r}")
 
