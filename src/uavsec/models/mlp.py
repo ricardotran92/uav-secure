@@ -14,9 +14,8 @@ from .base import Beamformer, FeaturePReLU
 class MLPBeamformer(Beamformer):
     KIND = "mlp"
 
-    def __init__(self, num_antennas: int, ref_snr: float, num_users: int, hidden_dims: list[int],
-                 input_transform: str = "linear") -> None:
-        super().__init__(num_antennas, ref_snr, input_transform, num_users=num_users, hidden_dims=list(hidden_dims))
+    def __init__(self, num_antennas: int, ref_snr: float, num_users: int, hidden_dims: list[int]) -> None:
+        super().__init__(num_antennas, ref_snr, num_users=num_users, hidden_dims=list(hidden_dims))
         self.num_users = num_users
         dims = [num_users * 4 * num_antennas, *hidden_dims]
         layers: list[nn.Module] = []

@@ -55,9 +55,8 @@ class GCNLayer(nn.Module):
 class SecureBeamGNN(Beamformer):
     KIND = "gnn"
 
-    def __init__(self, num_antennas: int, ref_snr: float, hidden_dim: int, num_layers: int,
-                 input_transform: str = "linear") -> None:
-        super().__init__(num_antennas, ref_snr, input_transform, hidden_dim=hidden_dim, num_layers=num_layers)
+    def __init__(self, num_antennas: int, ref_snr: float, hidden_dim: int, num_layers: int) -> None:
+        super().__init__(num_antennas, ref_snr, hidden_dim=hidden_dim, num_layers=num_layers)
         channel_dim, embed_dim = 4 * num_antennas, 2 * num_antennas
         self.embed_dim = embed_dim
         self.layers = nn.ModuleList(
