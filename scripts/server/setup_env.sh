@@ -29,9 +29,11 @@ fi
 conda activate "$ENV_NAME"
 
 pip install --upgrade pip
-pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
-pip install "stable-baselines3>=2.5" "gymnasium>=1.0,<1.3" \
-    numpy scipy pandas matplotlib pyyaml tqdm pytest imageio imageio-ffmpeg tensorboard
+# torch is pinned in the same command so no other package can upgrade it to a
+# build that needs a newer driver.
+pip install "torch==2.5.1" "stable-baselines3>=2.5" "gymnasium>=1.0,<1.3" \
+    numpy scipy pandas matplotlib pyyaml tqdm pytest imageio imageio-ffmpeg tensorboard \
+    --extra-index-url https://download.pytorch.org/whl/cu121
 
 python - <<'EOF'
 import torch

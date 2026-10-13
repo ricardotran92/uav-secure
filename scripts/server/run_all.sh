@@ -13,6 +13,7 @@ conda activate "${ENV_NAME:-uavsec}"
 # Install only when missing: concurrent runs must not reinstall the package at the same time.
 python -c "import uavsec" 2>/dev/null || pip install -q -e . --no-deps
 export CUDA_VISIBLE_DEVICES="${GPU:-2}"
+python -c "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 'CUDA is not available - check torch/driver')"
 
 python -m pytest -q
 python scripts/exp_convergence.py "$@"     # Phase 2: Fig. 4-5
