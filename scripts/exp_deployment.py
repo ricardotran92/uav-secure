@@ -91,6 +91,18 @@ def main() -> None:
     deployment.to_csv(run.path("deployment.csv"), index=False)
     plotting.save(plotting.fig8_deployment(deployment, users, eves, sys.area_size), run.path("figs", "fig8_deployment"))
 
+    # Robustness: the GNN-based optimum for every seed trained in Phase 2 (not only the selected one).
+    seed_rows = []
+    for ckpt in sorted(gnn_path.parent.glob(f"gnn_k{sys.num_users}_seed*.pt")):
+        seed_search = exhaustive_search(scenario, load_model(ckpt, device), sys, ev.grid_step_m, ev.fading_samples,
+                                        seed=cfg.seed, refine_top=ev.search_refine_top)
+        seed_rows.append({"checkpoint": ckpt.name, "opt_x": seed_search["optimum"][0],
+                          "opt_y": seed_search["optimum"][1], "optimum_rate": seed_search["optimum_rate"],
+                          "distance_to_paper_opt_m": (float(np.linalg.norm(seed_search["optimum"] - paper_opt))
+                                                      if paper_opt is not None else float("nan"))})
+    seed_optima = pd.DataFrame(seed_rows)
+    seed_optima.to_csv(run.path("seed_optima.csv"), index=False)
+
     rates = deployment.set_index("strategy")["rate"]
     paper_metrics = {}
     if paper_opt is not None:
@@ -113,6 +125,7 @@ def main() -> None:
         "sac_convergence_episode": convergence_episode(episodes["episode_reward"].to_numpy()),
         "sac_final_mean_secrecy_rate": float(episodes["mean_secrecy_rate"].tail(20).mean()),
         "trajectory_steps": len(traj) - 1,
+        "seed_optima": seed_optima.to_dict(orient="records"),
         **paper_metrics,
     })
 

@@ -24,11 +24,11 @@ system:
 
 gnn:
   num_layers: 5             # D GCN layers
-  hidden_dim: 128           # assumption
+  hidden_dim: 256           # assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)
   lr: 0.005
   epochs: 300               # "GNN train episodes"
   batch_size: 512
-  batches_per_epoch: 20     # assumption: fresh mini-batches per epoch
+  batches_per_epoch: 50     # assumption: fresh mini-batches per epoch
   val_samples: 2048         # assumption: fixed validation set
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)

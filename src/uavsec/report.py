@@ -174,6 +174,12 @@ class ReportBuilder:
             ("SAC final position - paper optimum (m)", f"{m['sac_final_distance_to_paper_optimum_m']:.1f}"),
         ] if "paper_optimum_position" in m else []), columns=["Metric", "Value"])
         paper_opt = np.asarray(m["paper_optimum_position"]) if "paper_optimum_position" in m else None
+        seed_table = ""
+        if (run / "seed_optima.csv").exists():
+            seeds = pd.read_csv(run / "seed_optima.csv")
+            seed_table = ("**GNN-based optimum for every Phase-2 training seed** (the deployed GNN is the seed "
+                          "with the best validation rate, chosen before any deployment result is seen):\n\n"
+                          + md_table(seeds, ".1f") + "\n\n")
         self.sections.append(
             "## 4. SAC-based UAV deployment (Fig. 6, Fig. 7, Fig. 8)\n\n" +
             self.figure(plotting.fig6_sac(episodes), "fig6_sac", "Fig. 6 - SAC training convergence") + "\n\n" +
@@ -181,7 +187,7 @@ class ReportBuilder:
                                                  area, (rate_map["grid_x"], rate_map["grid_y"], rate_map["rate"]),
                                                  paper_optimum=paper_opt),
                         "fig7_trajectory", "Fig. 7 - learned trajectory over the expected-secrecy-rate map") + "\n\n" +
-            md_table(headline) + "\n\n" +
+            md_table(headline) + "\n\n" + seed_table +
             self.figure(plotting.fig8_deployment(dep, users, eves, area), "fig8_deployment",
                         "Fig. 8 - expected sum secrecy rate per deployment strategy") + "\n\n" +
             md_table(dep.rename(columns={"rate": "rate (bps/Hz)"}), ".2f"))
