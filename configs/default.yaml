@@ -25,7 +25,7 @@ system:
 
 gnn:
   num_layers: 5             # D GCN layers
-  hidden_dim: 256           # assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)
+  hidden_dim: 512           # assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)
   lr: 0.005
   epochs: 300               # "GNN train episodes"
   batch_size: 512
@@ -33,7 +33,7 @@ gnn:
   val_samples: 2048         # assumption: fixed validation set
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
-  lr_schedule: constant     # assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)
+  lr_schedule: cosine       # assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
   uav_near_user_frac: 0.0   # assumption: share of training samples with the UAV around a random user (rest uniform)
   uav_near_user_std_m: 30.0 # assumption: spread (m) of those UAV positions around the user
@@ -45,21 +45,21 @@ mlp:
 sac:
   lr: 0.0003
   episodes: 500
-  episode_length: 100       # assumption: steps per episode
+  episode_length: 175       # assumption: Fig. 6 reward / secrecy-rate ratio suggests ~170-180 steps
   batch_size: 64
   buffer_size: 1000000
   gamma: 0.99               # discount factor eta
   tau: 0.005                # assumption: SB3 default soft-update rate
   learning_starts: 1000     # assumption
   net_arch: [256, 256]      # assumption
-  max_step_m: 5.0           # assumption: action [-1,1]^2 scaled to metres
+  max_step_m: 2.5           # assumption: action [-1,1]^2 scaled to metres (smoother trajectory than 5 m)
   topology_seed: 2025       # fixed user/eavesdropper layout for the run
   layout_file: configs/layouts/paper_fig7.yaml  # fixed layout of Fig. 7; "" = random layout from topology_seed
   obs_transform: log        # assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)
   reward_scale: 0.1         # assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec
   eval_every_episodes: 10   # assumption: deterministic evaluation interval; the best policy is kept
-  eval_episodes: 1          # assumption: deterministic episodes averaged per evaluation
-  gradient_steps: 1         # assumption: SAC gradient updates per environment step
+  eval_episodes: 3          # assumption: deterministic episodes averaged per evaluation
+  gradient_steps: 2         # assumption: SAC gradient updates per environment step
 
 opt:                        # gradient multi-start proxy for the optimizer of [45]
   restarts: 16
