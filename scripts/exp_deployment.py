@@ -64,15 +64,14 @@ def main() -> None:
     # The deployment problem (23)-(25) fixes W = GNN output (eq. (24)), so by default the
     # search uses the GNN, exactly like the SAC reward; "opt" gives the joint optimum of (7)-(9).
     search_opt = OptConfig(restarts=ev.search_opt_restarts, iters=ev.search_opt_iters, lr=cfg.opt.lr)
-    beamformers = {"opt": opt_beamformer(search_opt, make_generator(cfg.seed, device)), "gnn": gnn}
+    beamformers = {"gnn": gnn, "opt": opt_beamformer(search_opt, make_generator(cfg.seed, device))}
     if ev.search_beamformer not in beamformers:
         raise ValueError(f"eval.search_beamformer must be one of {sorted(beamformers)}")
-    search = exhaustive_search(scenario, beamformers[ev.search_beamformer], sys, ev.grid_step_m, ev.fading_samples,
-                               seed=cfg.seed, refine_top=ev.search_refine_top)
-    gnn_search = search if ev.search_beamformer == "gnn" else exhaustive_search(
-        scenario, gnn, sys, ev.grid_step_m, ev.fading_samples, seed=cfg.seed, refine_top=ev.search_refine_top)
-    log.info("optimum (%s): (%.1f, %.1f) | GNN-surface optimum: (%.1f, %.1f)", ev.search_beamformer,
-             *search["optimum"], *gnn_search["optimum"])
+    searches = {name: exhaustive_search(scenario, bf, sys, ev.grid_step_m, ev.fading_samples, seed=cfg.seed,
+                                        refine_top=ev.search_refine_top) for name, bf in beamformers.items()}
+    search, gnn_search = searches[ev.search_beamformer], searches["gnn"]
+    log.info("optimum with GNN beamforming: (%.1f, %.1f) | with OPT: (%.1f, %.1f) | Fig. 7 uses %s",
+             *searches["gnn"]["optimum"], *searches["opt"]["optimum"], ev.search_beamformer)
     np.savez_compressed(run.path("rate_map.npz"), **{k: v for k, v in search.items() if isinstance(v, np.ndarray)})
     final = traj[["x", "y"]].to_numpy()[-1]
     reference = load_paper_reference(cfg.sac.layout_file) if cfg.sac.layout_file else None
@@ -105,6 +104,7 @@ def main() -> None:
         "search_beamformer": ev.search_beamformer,
         "final_position": final, "optimum_position": search["optimum"],
         "gnn_surface_optimum_position": gnn_search["optimum"],
+        "opt_surface_optimum_position": searches["opt"]["optimum"],
         "distance_to_optimum_m": float(np.linalg.norm(final - search["optimum"])),
         "strategy_rates": rates.to_dict(),
         "graph_drl_vs_optimum_pct": float(100 * rates["Graph-DRL"] / rates["Exhaustive search"]),

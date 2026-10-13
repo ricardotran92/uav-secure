@@ -165,6 +165,8 @@ class ReportBuilder:
             ("SAC convergence episode (MA reaches 95% of final)", m["sac_convergence_episode"]),
             ("Optimum found with", f"{m['search_beamformer'].upper()} beamforming"),
             ("Optimum for GNN beamforming (m)", "({:.1f}, {:.1f})".format(*m["gnn_surface_optimum_position"])),
+            ("Optimum for OPT beamforming, reference only (m)",
+             "({:.1f}, {:.1f})".format(*m["opt_surface_optimum_position"])),
         ] + ([
             ("Paper optimum, Fig. 7 (m)", "({:.1f}, {:.1f})".format(*m["paper_optimum_position"])),
             ("Our optimum - paper optimum (m)", f"{m['optimum_distance_to_paper_m']:.1f}"),
