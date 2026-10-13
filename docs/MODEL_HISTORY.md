@@ -1,7 +1,7 @@
 # Model and parameter history
 
 _Reproduction of Tang et al., 'Deep Graph Reinforcement Learning for UAV-Enabled Multi-User Secure Communications' (IEEE TMC 2025)_  
-Updated 2026-10-13.
+Updated 2026-10-14.
 
 - **Main profile:** configs/default.yaml + configs/calibrated.yaml  ->  outputs/runs_calibrated/
 - **Reference profile:** configs/default.yaml (Table I as printed)  ->  outputs/runs/
@@ -28,24 +28,28 @@ Updated 2026-10-13.
 - 🔴 `system.path_loss_log` = **`ln`** - the paper writes "log(d)": log10 (standard) | ln
 - 🟡 `system.antenna_spacing` = **`0.5`** - assumption: half-wavelength ULA
 - 🔴 `system.distance_model` = **`horizontal`** - assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h
+- 🔴 `system.min_distance_m` = **`20`** - assumption: path-loss distance is clamped below at this value
 - 🔴 `system.array_axis` = **`x`** - assumption: ULA orientation in the horizontal plane (x | y)
-- 🟡 `gnn.hidden_dim` = **`256`** - assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)
+- 🟡 `gnn.hidden_dim` = **`512`** - assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)
 - 🟡 `gnn.batches_per_epoch` = **`50`** - assumption: fresh mini-batches per epoch
 - 🟡 `gnn.val_samples` = **`2048`** - assumption: fixed validation set
 - 🟡 `gnn.grad_clip` = **`1`** - assumption: gradient-norm clipping (training diverged without it)
-- 🟡 `gnn.lr_schedule` = **`constant`** - assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)
+- 🟡 `gnn.lr_schedule` = **`cosine`** - assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
+- 🟡 `gnn.input_transform` = **`linear`** - assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
+- 🟡 `gnn.uav_near_user_frac` = **`0`** - assumption: share of training samples with the UAV around a random user (rest uniform)
+- 🟡 `gnn.uav_near_user_std_m` = **`30`** - assumption: spread (m) of those UAV positions around the user
 - 🟡 `mlp.hidden_dims` = **`[512, 512, 512]`** - assumption
 - 🟡 `mlp.lr` = **`0.001`** - assumption (0.005 diverges for the wider MLP)
-- 🟡 `sac.episode_length` = **`100`** - assumption: steps per episode
+- 🟡 `sac.episode_length` = **`175`** - assumption: Fig. 6 reward / secrecy-rate ratio suggests ~170-180 steps
 - 🟡 `sac.tau` = **`0.005`** - assumption: SB3 default soft-update rate
 - 🟡 `sac.learning_starts` = **`1000`** - assumption
 - 🟡 `sac.net_arch` = **`[256, 256]`** - assumption
-- 🟡 `sac.max_step_m` = **`5`** - assumption: action [-1,1]^2 scaled to metres
+- 🟡 `sac.max_step_m` = **`2.5`** - assumption: action [-1,1]^2 scaled to metres (smoother trajectory than 5 m)
 - 🟡 `sac.obs_transform` = **`log`** - assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)
 - 🟡 `sac.reward_scale` = **`0.1`** - assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec
 - 🟡 `sac.eval_every_episodes` = **`10`** - assumption: deterministic evaluation interval; the best policy is kept
-- 🟡 `sac.gradient_steps` = **`1`** - assumption: SAC gradient updates per environment step
-- 🟡 `sac.eval_episodes` = **`1`** - assumption: deterministic episodes averaged per evaluation
+- 🟡 `sac.gradient_steps` = **`2`** - assumption: SAC gradient updates per environment step
+- 🟡 `sac.eval_episodes` = **`3`** - assumption: deterministic episodes averaged per evaluation
 
 **Main-profile results:**
 
@@ -67,10 +71,16 @@ Updated 2026-10-13.
 | C07 | system_model | Fixed SAC layout digitised from Fig. 7 | ✅ active |
 | C08 | system_model | Channel interpretation: natural log + horizontal distance (configs/calibrated.yaml) | ✅ active |
 | C09 | evaluation | Exhaustive search for the Fig. 7 optimum uses the GNN | ✅ active |
-| C10 | gnn | GNN capacity: hidden 128 -> 256, batches per epoch 20 -> 50 | ✅ active |
+| C10 | gnn | GNN capacity: hidden 128 -> 256, batches per epoch 20 -> 50 | ⏭️ superseded |
 | C11 | gnn | Log-compressed channel magnitude as GNN input | ↩️ reverted |
 | C12 | sac | SAC: log-compressed state, reward scale 0.1, keep the best evaluated policy | ✅ active |
 | C13 | infra | Smaller fixes | ✅ active |
+| C14 | gnn | Diagnosis: the GNN-based optimum jumped onto spikes right above single users | ✅ active |
+| C15 | system_model | Minimum horizontal path-loss distance of 20 m (calibrated profile) | ✅ active |
+| C16 | gnn | GNN: hidden 512 and cosine learning-rate schedule starting at 0.005 | ✅ active |
+| C17 | sac | SAC: 2 gradient steps per step, 2.5 m steps, 175 steps per episode, 3-episode evaluation | ✅ active |
+| C18 | gnn | Training UAV positions sampled near users (50%) | ✖ rejected |
+| C19 | infra | Memory-efficient max aggregation | ✅ active |
 
 ### C01 - Project scaffold, typed YAML configuration, run directories  ·  ✅ active
 
@@ -146,13 +156,13 @@ Updated 2026-10-13.
 - **Evidence:** Consequence: the optimum now depends on GNN quality, which led to C10.
 - **Commits:** `a2f3ea2`, `10d5143`, `8e04a16`
 
-### C10 - GNN capacity: hidden 128 -> 256, batches per epoch 20 -> 50  ·  ✅ active
+### C10 - GNN capacity: hidden 128 -> 256, batches per epoch 20 -> 50  ·  ⏭️ superseded
 
 - **Before:** hidden 128, 20 mini-batches per epoch: GNN reaches 71% of OPT on the calibrated model; its rate map put the optimum 45 m from the paper's.
 - **After:** gnn.hidden_dim = 256, gnn.batches_per_epoch = 50 (paper gives neither).
 - **Why:** Better GNN -> rate map closer to the true one. Architecture, loss, lr 0.005, 300 epochs, batch 512 unchanged.
 - **Evidence:** 128/20: 71% of OPT, optimum 45 m off. 256/20: 74%, 8 m. 128/50: 75%, 9 m. 256/50: 76%, 0 m. Three independent seeds at 256/50 (script study_gnn_optimum.py): 2.8 m, 2.8 m, 80 m (the third is a weaker GNN and is never selected because the deployed GNN is the best-validation seed).
-- **Impact:** Training time 3 min -> 11 min per seed on GPU.
+- **Impact:** Training time 3 min -> 11 min per seed on GPU. Superseded by C16 (hidden 512 + cosine).
 - **Commits:** `aa6fd59`
 
 ### C11 - Log-compressed channel magnitude as GNN input  ·  ↩️ reverted
@@ -160,13 +170,13 @@ Updated 2026-10-13.
 - **Before:** Linear scaling sqrt(P/SNR_ref) * h.
 - **After:** Tried log(1+|h|); reverted.
 - **Why:** Channel gain spans decades under the horizontal-distance path loss (feature 99th percentile about 67, median 1.8).
-- **Evidence:** No gain: linear GNN 8.93 / MLP 6.78 vs log GNN 8.90 / MLP 6.63 bps/Hz (100 epochs).
+- **Evidence:** No gain: linear GNN 8.93 / MLP 6.78 vs log GNN 8.90 / MLP 6.63 bps/Hz (100 epochs). Re-tested on 2026-10-14 in the dense user cluster (G8: 512 + log -> 5.6 val, broken; G9: 256 + log -> 73% of OPT, same as linear). Not adopted.
 - **Commits:** `571480d`, `78e1a0b`
 
 ### C12 - SAC: log-compressed state, reward scale 0.1, keep the best evaluated policy  ·  ✅ active
 
 - **Before:** Linear state, raw reward (about 14-28), last policy kept. SAC reached about 18 bps/Hz in the first 100 episodes and then degraded; final point (121, 118) was 63% of the optimum and 20% below the best heuristic.
-- **After:** sac.obs_transform = log, sac.reward_scale = 0.1 (training only; logs and figures use the unscaled R_sec), sac.eval_every_episodes = 10 with the best deterministic policy restored at the end.
+- **After:** sac.obs_transform = log, sac.reward_scale = 0.1 (training only; logs and figures use the unscaled R_sec), sac.eval_every_episodes = 10 with the best deterministic policy restored at the end. Extended by C17.
 - **Why:** Large channel features and reward scale hurt the critics; SAC's last iterate is noisy.
 - **Evidence:** Calibrated: final point (73.6, 154.5), 92.8% of the optimum, +17% over the best heuristic. Table I: 93.1%, +4.8%.
 - **Commits:** `99d03f5`
@@ -178,6 +188,48 @@ Updated 2026-10-13.
 - **Why:** Found while running the pipelines.
 - **Evidence:** Smoke tests and full runs.
 - **Commits:** `61e2ef7`, `a2f3ea2`
+
+### C14 - Diagnosis: the GNN-based optimum jumped onto spikes right above single users  ·  ✅ active
+
+- **Before:** Better GNNs (cosine LR, more width or data) reached 77-80% of OPT but put the Fig. 7 optimum right above user U2 (136, 144) or U1 (88, 158), 37-80 m from the paper's.
+- **After:** Both candidates measured with 2048 fading draws: under OPT the paper's cluster (29.3 bps/Hz) beats the point above U2 (25.5); the GNNs reached 101-106% of OPT above U2 but only 70-77% in the cluster.
+- **Why:** Find out whether the paper's optimum or the spike is the true optimum.
+- **Evidence:** Root cause: with the horizontal-distance path loss clamped at 1 m, a UAV right above a user gives that user about 99 dB SNR (impossible at 100 m altitude). The paper's optimum is 21 m from the nearest user, so its model has no such spikes.
+
+### C15 - Minimum horizontal path-loss distance of 20 m (calibrated profile)  ·  ✅ active
+
+- **Before:** Hard-coded clamp at 1 m.
+- **After:** system.min_distance_m (default 1.0); configs/calibrated.yaml sets 20 m.
+- **Why:** Do not extrapolate the empirical 30 + 22 ln(d) model below 20 m horizontal distance (the paper's user-eavesdropper scale); this removes the unphysical spikes.
+- **Evidence:** OPT, 2 m grid: 1 m -> optimum 18 m from paper, profile error 0.15; 10 m -> same; 20 m -> 16 m, paper point 96% of max, profile 0.16, rate 29.9; 50 m -> 33 m; 100 m -> 37 m. GNN (256, cosine) at 20 m: 3 seeds give 81-82% of OPT and optima 7.2 / 8.2 / 10.8 m from the paper's.
+
+### C16 - GNN: hidden 512 and cosine learning-rate schedule starting at 0.005  ·  ✅ active
+
+- **Before:** hidden 256, constant lr 0.005 (about 72% of OPT).
+- **After:** gnn.hidden_dim = 512, gnn.lr_schedule = cosine (starts at the Table I value 0.005, decays to 1%). Still 5 GCN layers, batch 512, 300 episodes.
+- **Why:** Constant lr plateaued at about 72% of OPT whatever the width or data; the paper gives no schedule. The user approved the schedule on 2026-10-14.
+- **Evidence:** Constant lr: 256 -> 72%, 512 -> similar (G6), 256 + near-user sampling -> 71% (G10). Cosine: 256 -> 77-82%, 512 -> 80-84%. Hidden 1024 collapsed at lr 0.005 (all secrecy rates clamped to 0, zero gradient). Final candidate 512 + cosine + 20 m: 84% of OPT, optimum exactly at (56, 140).
+
+### C17 - SAC: 2 gradient steps per step, 2.5 m steps, 175 steps per episode, 3-episode evaluation  ·  ✅ active
+
+- **Before:** 1 gradient step, 5 m steps, 100 steps per episode, 1 evaluation episode: SAC stopped 20 m from the optimum and jittered about 5 m per step.
+- **After:** sac.gradient_steps = 2, sac.max_step_m = 2.5, sac.episode_length = 175, sac.eval_episodes = 3. Table I SAC values (lr, 500 episodes, mini-batch 64, buffer 1e6, discount 0.99) unchanged.
+- **Why:** More updates per sample, smaller steps for a smoother path, horizon long enough to reach the optimum. Fig. 6 of the paper (episode reward about 4.4e3 at about 25 bps/Hz) implies about 170-180 steps per episode.
+- **Evidence:** With the previous GNN: S1 (2 grad steps) 10.5 m from paper; S3 (+3-episode eval) 5.6 m; S2 (T=200) 13.4 m; S4 (2.5 m, T=200, 1 grad step) 56.9 m; S5 (2.5 m, T=100) 57.7 m (cannot reach); S6 (2 grad steps, 2.5 m, T=175) 3.9 m with 1.0 m jitter.
+
+### C18 - Training UAV positions sampled near users (50%)  ·  ✖ rejected
+
+- **Before:** UAV uniform in the area during GNN training.
+- **After:** Option gnn.uav_near_user_frac kept at 0.0.
+- **Why:** Hypothesis: the GNN is weak where SAC places the UAV.
+- **Evidence:** G10 (constant lr) 71% of OPT; G12/G13 (cosine) 77-79% with optima on the spike above U1 (37 m). No gain over uniform sampling.
+
+### C19 - Memory-efficient max aggregation  ·  ✅ active
+
+- **Before:** The max over the other nodes built a B x K x K x H tensor (2 GB for 32k samples): out of memory on the shared GPU.
+- **After:** Top-2 trick, O(K) memory, bit-identical results (checked for K = 1, 2, 5, 12 and ties); evaluation chunks of 8192.
+- **Why:** Two SAC runs crashed in the final grid search.
+- **Evidence:** Tests pass; outputs identical to the K x K reference.
 
 ## 4. Result snapshots
 
@@ -351,7 +403,6 @@ Updated 2026-10-13.
 ## 5. Open issues
 
 - GNN reaches only about 72% of our OPT on the calibrated model (paper: near-optimal). OPT is our own substitute for [45]; no direct comparison is possible.
-- SAC trajectory winds around and stops 20 m from the optimum; the paper's is a straighter path ending at the optimum.
 - Fig. 8 heuristics reach 67-79% of the optimum here vs 39-61% in the paper (same ordering, smaller gaps).
 - GNN at K=1 fails (no neighbours -> zero aggregate, never seen in training); MLP is better there.
 - GNN trained at 1 W does not extrapolate in transmit power (saturates at 40 dBm); the paper's GNN tracks OPT.

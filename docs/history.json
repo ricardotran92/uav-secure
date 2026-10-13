@@ -1,7 +1,7 @@
 {
   "meta": {
     "project": "Reproduction of Tang et al., 'Deep Graph Reinforcement Learning for UAV-Enabled Multi-User Secure Communications' (IEEE TMC 2025)",
-    "updated": "2026-10-13",
+    "updated": "2026-10-14",
     "main_profile": "configs/default.yaml + configs/calibrated.yaml  ->  outputs/runs_calibrated/",
     "reference_profile": "configs/default.yaml (Table I as printed)  ->  outputs/runs/",
     "status_legend": {
@@ -11,22 +11,63 @@
       "rejected": "evaluated, never adopted"
     }
   },
-
   "architecture": [
-    {"block": "Channel (channel.py)", "description": "Rician fading K=10 dB; LoS = half-wavelength ULA steering vector at the UAV; path loss 30 + 22 log(d) dB; channels returned divided by sigma_0 (noise power = 1) for float32 conditioning.", "paper": "Sec. III, VI"},
-    {"block": "Secrecy rate (secrecy.py)", "description": "R_k = log2(1 + |h^H w_k|^2 / (sum_{l!=k} |h^H w_l|^2 + 1)); R_sec = (R_k - R_E,k)^+; power normalisation sqrt(P) * W / ||W||.", "paper": "eq. (4)-(6), (19), (21)-(22)"},
-    {"block": "GNN (models/gnn.py)", "description": "K nodes (user + its eavesdropper); D GCN layers; node weights shared; message generation -> max aggregation over the other nodes -> concat -> output MLP; PReLU; embedding e_k updated, channel part kept; final normalisation.", "paper": "eq. (12)-(19), Fig. 2"},
-    {"block": "MLP baseline (models/mlp.py)", "description": "Flattened channels of all K pairs -> all K beamformers; input size tied to K (one MLP per K).", "paper": "'conventional deep model with pure MLP structure'"},
-    {"block": "Beamformer training (training/beamformer_trainer.py)", "description": "Unsupervised, loss = -mean sum secrecy rate; fresh random layouts, UAV positions and fading every mini-batch; best-validation checkpoint kept.", "paper": "eq. (20)"},
-    {"block": "OPT baseline (baselines/opt_beamforming.py)", "description": "Per-instance projected-gradient (Adam) ascent on the sum secrecy rate, multi-start (MRT, ZF, random). Stand-in for [45], which the paper does not describe.", "paper": "substitute for [45]"},
-    {"block": "Deployment MDP (envs/uav_env.py)", "description": "State = UAV position + channel features; action = (dx, dy) in [-1,1]^2 scaled to metres; reward = sum secrecy rate with GNN beamforming at the new position; fresh fading every step.", "paper": "eq. (26)-(28)"},
-    {"block": "SAC (rl/sac_trainer.py)", "description": "Stable-Baselines3 SAC (twin critics, target networks, auto-tuned temperature) plus periodic deterministic evaluation that keeps the best policy.", "paper": "eq. (29)-(36), Alg. 1"},
-    {"block": "Deployment baselines (baselines/deployment.py)", "description": "Area centre, geometric centre, circumcentre (minimum enclosing circle), polygon centroid (convex hull); exhaustive grid search of the expected secrecy rate, scored with GNN beamforming (problem (23)-(25), constraint (24)).", "paper": "Fig. 7-8"}
+    {
+      "block": "Channel (channel.py)",
+      "description": "Rician fading K=10 dB; LoS = half-wavelength ULA steering vector at the UAV; path loss 30 + 22 log(d) dB; channels returned divided by sigma_0 (noise power = 1) for float32 conditioning.",
+      "paper": "Sec. III, VI"
+    },
+    {
+      "block": "Secrecy rate (secrecy.py)",
+      "description": "R_k = log2(1 + |h^H w_k|^2 / (sum_{l!=k} |h^H w_l|^2 + 1)); R_sec = (R_k - R_E,k)^+; power normalisation sqrt(P) * W / ||W||.",
+      "paper": "eq. (4)-(6), (19), (21)-(22)"
+    },
+    {
+      "block": "GNN (models/gnn.py)",
+      "description": "K nodes (user + its eavesdropper); D GCN layers; node weights shared; message generation -> max aggregation over the other nodes -> concat -> output MLP; PReLU; embedding e_k updated, channel part kept; final normalisation.",
+      "paper": "eq. (12)-(19), Fig. 2"
+    },
+    {
+      "block": "MLP baseline (models/mlp.py)",
+      "description": "Flattened channels of all K pairs -> all K beamformers; input size tied to K (one MLP per K).",
+      "paper": "'conventional deep model with pure MLP structure'"
+    },
+    {
+      "block": "Beamformer training (training/beamformer_trainer.py)",
+      "description": "Unsupervised, loss = -mean sum secrecy rate; fresh random layouts, UAV positions and fading every mini-batch; best-validation checkpoint kept.",
+      "paper": "eq. (20)"
+    },
+    {
+      "block": "OPT baseline (baselines/opt_beamforming.py)",
+      "description": "Per-instance projected-gradient (Adam) ascent on the sum secrecy rate, multi-start (MRT, ZF, random). Stand-in for [45], which the paper does not describe.",
+      "paper": "substitute for [45]"
+    },
+    {
+      "block": "Deployment MDP (envs/uav_env.py)",
+      "description": "State = UAV position + channel features; action = (dx, dy) in [-1,1]^2 scaled to metres; reward = sum secrecy rate with GNN beamforming at the new position; fresh fading every step.",
+      "paper": "eq. (26)-(28)"
+    },
+    {
+      "block": "SAC (rl/sac_trainer.py)",
+      "description": "Stable-Baselines3 SAC (twin critics, target networks, auto-tuned temperature) plus periodic deterministic evaluation that keeps the best policy.",
+      "paper": "eq. (29)-(36), Alg. 1"
+    },
+    {
+      "block": "Deployment baselines (baselines/deployment.py)",
+      "description": "Area centre, geometric centre, circumcentre (minimum enclosing circle), polygon centroid (convex hull); exhaustive grid search of the expected secrecy rate, scored with GNN beamforming (problem (23)-(25), constraint (24)).",
+      "paper": "Fig. 7-8"
+    }
   ],
-
   "changes": [
     {
-      "id": "C01", "phase": 0, "area": "infra", "status": "active", "commits": ["ff14c54", "15d539b"],
+      "id": "C01",
+      "phase": 0,
+      "area": "infra",
+      "status": "active",
+      "commits": [
+        "ff14c54",
+        "15d539b"
+      ],
       "title": "Project scaffold, typed YAML configuration, run directories",
       "before": "Empty repository.",
       "after": "Package src/uavsec, configs/default.yaml as the single source of truth (Table I + clearly marked assumptions), every run writes config.yaml, log.txt, metrics.json with git hash, seed and wall time.",
@@ -34,7 +75,13 @@
       "evidence": "19 unit tests (rates vs numpy reference, permutation equivariance, power constraint, env, heuristics)."
     },
     {
-      "id": "C02", "phase": 1, "area": "gnn", "status": "active", "commits": ["ff14c54"],
+      "id": "C02",
+      "phase": 1,
+      "area": "gnn",
+      "status": "active",
+      "commits": [
+        "ff14c54"
+      ],
       "title": "Initial model choices where the paper is silent",
       "before": "-",
       "after": "GNN hidden width 128, weights shared across nodes, max aggregation, PReLU; MLP 3x512; OPT 16 restarts x 500 iterations; SAC episode length 100, max step 5 m, networks 2x256; area-centre start; eavesdropper 20 m from its user at a random bearing.",
@@ -42,7 +89,13 @@
       "evidence": "Local CPU sanity check: GNN 12.6 vs MLP 6.4 bps/Hz at a 30 dB lower SNR (30 epochs)."
     },
     {
-      "id": "C03", "phase": 1, "area": "gnn", "status": "active", "commits": ["ff14c54"],
+      "id": "C03",
+      "phase": 1,
+      "area": "gnn",
+      "status": "active",
+      "commits": [
+        "ff14c54"
+      ],
       "title": "PReLU on the last axis",
       "before": "torch nn.PReLU(num_parameters) on tensors shaped (B, K, H) -> shape mismatch error.",
       "after": "FeaturePReLU: one learnable slope per feature on the last axis.",
@@ -50,7 +103,14 @@
       "evidence": "Tests passed 15/15 afterwards."
     },
     {
-      "id": "C04", "phase": 0, "area": "infra", "status": "active", "commits": ["c39f9bf", "af2b07a"],
+      "id": "C04",
+      "phase": 0,
+      "area": "infra",
+      "status": "active",
+      "commits": [
+        "c39f9bf",
+        "af2b07a"
+      ],
       "title": "Server environment: torch pinned, CUDA check",
       "before": "Upgrading stable-baselines3 silently replaced torch 2.5.1+cu121 by torch 2.14 (CUDA 13); driver 535 (CUDA 12.2) cannot run it, so training fell back to CPU.",
       "after": "torch==2.5.1 pinned in the same pip command; run_all.sh aborts if CUDA is not available; concurrent runs no longer reinstall the package.",
@@ -58,7 +118,13 @@
       "evidence": "After the fix GPU 2 at 97%."
     },
     {
-      "id": "C05", "phase": 2, "area": "gnn", "status": "active", "commits": ["13b48ec"],
+      "id": "C05",
+      "phase": 2,
+      "area": "gnn",
+      "status": "active",
+      "commits": [
+        "13b48ec"
+      ],
       "title": "Gradient-norm clipping (1.0) for beamformer training",
       "before": "No clipping; Adam lr 0.005 (paper's value).",
       "after": "gnn.grad_clip = 1.0.",
@@ -66,7 +132,13 @@
       "evidence": "Clipped runs stay stable for all 300 epochs (about 18 bps/Hz at 128 width)."
     },
     {
-      "id": "C06", "phase": 3, "area": "system_model", "status": "superseded", "commits": ["5a15530"],
+      "id": "C06",
+      "phase": 3,
+      "area": "system_model",
+      "status": "superseded",
+      "commits": [
+        "5a15530"
+      ],
       "title": "Hypothesis A: noise power 30 dB higher (configs/paper_snr.yaml)",
       "before": "Table I as printed gives a per-antenna SNR of about 55 dB; zero-forcing alone reaches 86-90 bps/Hz at K=8, far above the paper's OPT curve (about 15-18).",
       "after": "Re-run everything with noise 1.2e-10 W (a W/mW slip).",
@@ -75,7 +147,13 @@
       "impact_on_results": "Kept only as an extra reference (configs/paper_snr.yaml)."
     },
     {
-      "id": "C07", "phase": 4, "area": "system_model", "status": "active", "commits": ["5ff8ff3"],
+      "id": "C07",
+      "phase": 4,
+      "area": "system_model",
+      "status": "active",
+      "commits": [
+        "5ff8ff3"
+      ],
       "title": "Fixed SAC layout digitised from Fig. 7",
       "before": "Random user/eavesdropper layout (seed 2025).",
       "after": "configs/layouts/paper_fig7.yaml: 8 users + 8 eavesdroppers read off the figure (+-1 m), including the user hidden behind the legend at (137, 143); UAV starts at (100, 100). Paper reference optimum (56, 140) and Fig. 8 bar heights stored in the same file for comparison only.",
@@ -83,7 +161,16 @@
       "evidence": "User approved the layout figure (outputs/layout/layout_check.png). Pairing of eavesdroppers to users is an inference (paper does not say). A test of both pairings of the U5/U6 cluster could not tell them apart, so the one closest to 'about 20 m' was kept."
     },
     {
-      "id": "C08", "phase": 4, "area": "system_model", "status": "active", "commits": ["152b4cc", "3493cc3", "7f5a48d", "5daf093"],
+      "id": "C08",
+      "phase": 4,
+      "area": "system_model",
+      "status": "active",
+      "commits": [
+        "152b4cc",
+        "3493cc3",
+        "7f5a48d",
+        "5daf093"
+      ],
       "title": "Channel interpretation: natural log + horizontal distance (configs/calibrated.yaml)",
       "before": "log10 and 3-D distance in the path loss (the 'standard' reading). Deployment optimum 45-62 m from the paper's (56, 140); heuristics reach over 90% of the optimum (paper Fig. 8: 39-61%); rate map almost flat.",
       "after": "system.path_loss_log = ln, system.distance_model = horizontal, system.array_axis = x. All Table I numbers unchanged.",
@@ -92,7 +179,15 @@
       "impact_on_results": "Main profile. Table I as printed is kept as a reference run."
     },
     {
-      "id": "C09", "phase": 4, "area": "evaluation", "status": "active", "commits": ["a2f3ea2", "10d5143", "8e04a16"],
+      "id": "C09",
+      "phase": 4,
+      "area": "evaluation",
+      "status": "active",
+      "commits": [
+        "a2f3ea2",
+        "10d5143",
+        "8e04a16"
+      ],
       "title": "Exhaustive search for the Fig. 7 optimum uses the GNN",
       "before": "First changed to the OPT beamformer (joint optimum of (7)-(9)).",
       "after": "Default eval.search_beamformer = gnn (problem (23)-(25) fixes W = GNN output, eq. (24)); the OPT-based optimum is always computed and reported next to it.",
@@ -100,101 +195,544 @@
       "evidence": "Consequence: the optimum now depends on GNN quality, which led to C10."
     },
     {
-      "id": "C10", "phase": 4, "area": "gnn", "status": "active", "commits": ["aa6fd59"],
+      "id": "C10",
+      "phase": 4,
+      "area": "gnn",
+      "status": "superseded",
+      "commits": [
+        "aa6fd59"
+      ],
       "title": "GNN capacity: hidden 128 -> 256, batches per epoch 20 -> 50",
       "before": "hidden 128, 20 mini-batches per epoch: GNN reaches 71% of OPT on the calibrated model; its rate map put the optimum 45 m from the paper's.",
       "after": "gnn.hidden_dim = 256, gnn.batches_per_epoch = 50 (paper gives neither).",
       "reason": "Better GNN -> rate map closer to the true one. Architecture, loss, lr 0.005, 300 epochs, batch 512 unchanged.",
       "evidence": "128/20: 71% of OPT, optimum 45 m off. 256/20: 74%, 8 m. 128/50: 75%, 9 m. 256/50: 76%, 0 m. Three independent seeds at 256/50 (script study_gnn_optimum.py): 2.8 m, 2.8 m, 80 m (the third is a weaker GNN and is never selected because the deployed GNN is the best-validation seed).",
-      "impact_on_results": "Training time 3 min -> 11 min per seed on GPU."
+      "impact_on_results": "Training time 3 min -> 11 min per seed on GPU. Superseded by C16 (hidden 512 + cosine)."
     },
     {
-      "id": "C11", "phase": 2, "area": "gnn", "status": "reverted", "commits": ["571480d", "78e1a0b"],
+      "id": "C11",
+      "phase": 2,
+      "area": "gnn",
+      "status": "reverted",
+      "commits": [
+        "571480d",
+        "78e1a0b"
+      ],
       "title": "Log-compressed channel magnitude as GNN input",
       "before": "Linear scaling sqrt(P/SNR_ref) * h.",
       "after": "Tried log(1+|h|); reverted.",
       "reason": "Channel gain spans decades under the horizontal-distance path loss (feature 99th percentile about 67, median 1.8).",
-      "evidence": "No gain: linear GNN 8.93 / MLP 6.78 vs log GNN 8.90 / MLP 6.63 bps/Hz (100 epochs)."
+      "evidence": "No gain: linear GNN 8.93 / MLP 6.78 vs log GNN 8.90 / MLP 6.63 bps/Hz (100 epochs). Re-tested on 2026-10-14 in the dense user cluster (G8: 512 + log -> 5.6 val, broken; G9: 256 + log -> 73% of OPT, same as linear). Not adopted."
     },
     {
-      "id": "C12", "phase": 4, "area": "sac", "status": "active", "commits": ["99d03f5"],
+      "id": "C12",
+      "phase": 4,
+      "area": "sac",
+      "status": "active",
+      "commits": [
+        "99d03f5"
+      ],
       "title": "SAC: log-compressed state, reward scale 0.1, keep the best evaluated policy",
       "before": "Linear state, raw reward (about 14-28), last policy kept. SAC reached about 18 bps/Hz in the first 100 episodes and then degraded; final point (121, 118) was 63% of the optimum and 20% below the best heuristic.",
-      "after": "sac.obs_transform = log, sac.reward_scale = 0.1 (training only; logs and figures use the unscaled R_sec), sac.eval_every_episodes = 10 with the best deterministic policy restored at the end.",
+      "after": "sac.obs_transform = log, sac.reward_scale = 0.1 (training only; logs and figures use the unscaled R_sec), sac.eval_every_episodes = 10 with the best deterministic policy restored at the end. Extended by C17.",
       "reason": "Large channel features and reward scale hurt the critics; SAC's last iterate is noisy.",
       "evidence": "Calibrated: final point (73.6, 154.5), 92.8% of the optimum, +17% over the best heuristic. Table I: 93.1%, +4.8%."
     },
     {
-      "id": "C13", "phase": 5, "area": "infra", "status": "active", "commits": ["61e2ef7", "a2f3ea2"],
+      "id": "C13",
+      "phase": 5,
+      "area": "infra",
+      "status": "active",
+      "commits": [
+        "61e2ef7",
+        "a2f3ea2"
+      ],
       "title": "Smaller fixes",
       "before": "latest_run('deployment') also matched 'deployment_sensitivity_*'; '--set' given twice kept only the last list; report crashed when metrics lacked a field.",
       "after": "Exact timestamp match; --set accumulates; report tolerates older metrics.",
       "reason": "Found while running the pipelines.",
       "evidence": "Smoke tests and full runs."
+    },
+    {
+      "id": "C14",
+      "phase": 4,
+      "area": "gnn",
+      "status": "active",
+      "commits": [],
+      "title": "Diagnosis: the GNN-based optimum jumped onto spikes right above single users",
+      "before": "Better GNNs (cosine LR, more width or data) reached 77-80% of OPT but put the Fig. 7 optimum right above user U2 (136, 144) or U1 (88, 158), 37-80 m from the paper's.",
+      "after": "Both candidates measured with 2048 fading draws: under OPT the paper's cluster (29.3 bps/Hz) beats the point above U2 (25.5); the GNNs reached 101-106% of OPT above U2 but only 70-77% in the cluster.",
+      "reason": "Find out whether the paper's optimum or the spike is the true optimum.",
+      "evidence": "Root cause: with the horizontal-distance path loss clamped at 1 m, a UAV right above a user gives that user about 99 dB SNR (impossible at 100 m altitude). The paper's optimum is 21 m from the nearest user, so its model has no such spikes."
+    },
+    {
+      "id": "C15",
+      "phase": 4,
+      "area": "system_model",
+      "status": "active",
+      "commits": [],
+      "title": "Minimum horizontal path-loss distance of 20 m (calibrated profile)",
+      "before": "Hard-coded clamp at 1 m.",
+      "after": "system.min_distance_m (default 1.0); configs/calibrated.yaml sets 20 m.",
+      "reason": "Do not extrapolate the empirical 30 + 22 ln(d) model below 20 m horizontal distance (the paper's user-eavesdropper scale); this removes the unphysical spikes.",
+      "evidence": "OPT, 2 m grid: 1 m -> optimum 18 m from paper, profile error 0.15; 10 m -> same; 20 m -> 16 m, paper point 96% of max, profile 0.16, rate 29.9; 50 m -> 33 m; 100 m -> 37 m. GNN (256, cosine) at 20 m: 3 seeds give 81-82% of OPT and optima 7.2 / 8.2 / 10.8 m from the paper's."
+    },
+    {
+      "id": "C16",
+      "phase": 4,
+      "area": "gnn",
+      "status": "active",
+      "commits": [],
+      "title": "GNN: hidden 512 and cosine learning-rate schedule starting at 0.005",
+      "before": "hidden 256, constant lr 0.005 (about 72% of OPT).",
+      "after": "gnn.hidden_dim = 512, gnn.lr_schedule = cosine (starts at the Table I value 0.005, decays to 1%). Still 5 GCN layers, batch 512, 300 episodes.",
+      "reason": "Constant lr plateaued at about 72% of OPT whatever the width or data; the paper gives no schedule. The user approved the schedule on 2026-10-14.",
+      "evidence": "Constant lr: 256 -> 72%, 512 -> similar (G6), 256 + near-user sampling -> 71% (G10). Cosine: 256 -> 77-82%, 512 -> 80-84%. Hidden 1024 collapsed at lr 0.005 (all secrecy rates clamped to 0, zero gradient). Final candidate 512 + cosine + 20 m: 84% of OPT, optimum exactly at (56, 140)."
+    },
+    {
+      "id": "C17",
+      "phase": 4,
+      "area": "sac",
+      "status": "active",
+      "commits": [],
+      "title": "SAC: 2 gradient steps per step, 2.5 m steps, 175 steps per episode, 3-episode evaluation",
+      "before": "1 gradient step, 5 m steps, 100 steps per episode, 1 evaluation episode: SAC stopped 20 m from the optimum and jittered about 5 m per step.",
+      "after": "sac.gradient_steps = 2, sac.max_step_m = 2.5, sac.episode_length = 175, sac.eval_episodes = 3. Table I SAC values (lr, 500 episodes, mini-batch 64, buffer 1e6, discount 0.99) unchanged.",
+      "reason": "More updates per sample, smaller steps for a smoother path, horizon long enough to reach the optimum. Fig. 6 of the paper (episode reward about 4.4e3 at about 25 bps/Hz) implies about 170-180 steps per episode.",
+      "evidence": "With the previous GNN: S1 (2 grad steps) 10.5 m from paper; S3 (+3-episode eval) 5.6 m; S2 (T=200) 13.4 m; S4 (2.5 m, T=200, 1 grad step) 56.9 m; S5 (2.5 m, T=100) 57.7 m (cannot reach); S6 (2 grad steps, 2.5 m, T=175) 3.9 m with 1.0 m jitter."
+    },
+    {
+      "id": "C18",
+      "phase": 4,
+      "area": "gnn",
+      "status": "rejected",
+      "commits": [],
+      "title": "Training UAV positions sampled near users (50%)",
+      "before": "UAV uniform in the area during GNN training.",
+      "after": "Option gnn.uav_near_user_frac kept at 0.0.",
+      "reason": "Hypothesis: the GNN is weak where SAC places the UAV.",
+      "evidence": "G10 (constant lr) 71% of OPT; G12/G13 (cosine) 77-79% with optima on the spike above U1 (37 m). No gain over uniform sampling."
+    },
+    {
+      "id": "C19",
+      "phase": 5,
+      "area": "infra",
+      "status": "active",
+      "commits": [],
+      "title": "Memory-efficient max aggregation",
+      "before": "The max over the other nodes built a B x K x K x H tensor (2 GB for 32k samples): out of memory on the shared GPU.",
+      "after": "Top-2 trick, O(K) memory, bit-identical results (checked for K = 1, 2, 5, 12 and ties); evaluation chunks of 8192.",
+      "reason": "Two SAC runs crashed in the final grid search.",
+      "evidence": "Tests pass; outputs identical to the K x K reference."
     }
   ],
-
   "results_snapshots": [
     {
-      "id": "R1", "label": "Table I as printed, GNN 128/20 (first full run)", "after_changes": ["C01", "C05"],
-      "convergence": {"gnn_val": "20.59 +- 2.98", "mlp_val": "17.70 +- 0.06", "transfer_8_to_12": "25.85 (1-3 epochs to 95%) vs re-training 22.33 (65-82 epochs)"},
-      "beamforming_K8_1W": {"GNN": 25.67, "OPT": 90.87, "MLP": 18.79, "ZF": 89.96},
+      "id": "R1",
+      "label": "Table I as printed, GNN 128/20 (first full run)",
+      "after_changes": [
+        "C01",
+        "C05"
+      ],
+      "convergence": {
+        "gnn_val": "20.59 +- 2.98",
+        "mlp_val": "17.70 +- 0.06",
+        "transfer_8_to_12": "25.85 (1-3 epochs to 95%) vs re-training 22.33 (65-82 epochs)"
+      },
+      "beamforming_K8_1W": {
+        "GNN": 25.67,
+        "OPT": 90.87,
+        "MLP": 18.79,
+        "ZF": 89.96
+      },
       "deployment": "GNN-surface optimum (120, 122): 66.5 m from the paper's. Random-layout SAC run discarded."
     },
     {
-      "id": "R2", "label": "Noise +30 dB hypothesis, GNN 128/20", "after_changes": ["C06"],
-      "beamforming_K8_1W": {"GNN": 20.79, "OPT": 35.11, "MLP": 12.41, "ZF": 15.56},
+      "id": "R2",
+      "label": "Noise +30 dB hypothesis, GNN 128/20",
+      "after_changes": [
+        "C06"
+      ],
+      "beamforming_K8_1W": {
+        "GNN": 20.79,
+        "OPT": 35.11,
+        "MLP": 12.41,
+        "ZF": 15.56
+      },
       "deployment": "GNN-surface optimum (80, 138): 24 m from the paper's; rate map still flat."
     },
     {
-      "id": "R3", "label": "Sensitivity study of channel interpretations (OPT beamformer)", "after_changes": ["C07", "C08"],
+      "id": "R3",
+      "label": "Sensitivity study of channel interpretations (OPT beamformer)",
+      "after_changes": [
+        "C07",
+        "C08"
+      ],
       "deployment": "Best: ln + horizontal + x-axis: optimum 17 m from the paper's, Fig. 8 profile error 0.15. See docs/history.json C08 for the full list."
     },
     {
-      "id": "R4", "label": "GNN capacity study on the calibrated model", "after_changes": ["C08", "C10"],
+      "id": "R4",
+      "label": "GNN capacity study on the calibrated model",
+      "after_changes": [
+        "C08",
+        "C10"
+      ],
       "deployment": "128/20: 45 m, 256/20: 8 m, 128/50: 9 m, 256/50: 0 m (GNN = 71 / 74 / 75 / 76% of OPT)."
     },
     {
-      "id": "R5", "label": "FINAL main profile (calibrated, GNN 256/50, SAC fixes)", "after_changes": ["C01-C13"],
-      "convergence": {"gnn_val": "10.25 +- 0.10", "mlp_val": "7.79 +- 0.11", "transfer_8_to_12": "12.52 (0 epochs to 95%) vs re-training 11.56 (51-63 epochs)"},
-      "beamforming_K8_1W": {"GNN": 12.14, "OPT": 16.75, "MLP": 8.93, "ZF": 0.26, "MRT": 2.84},
-      "gnn_over_opt": {"K=2": 0.72, "K=8": 0.72, "K=11": 0.70},
-      "timing_seconds_per_inference_K8": {"GNN": 0.0024, "MLP": 0.0006, "OPT": 3.91},
+      "id": "R5",
+      "label": "FINAL main profile (calibrated, GNN 256/50, SAC fixes)",
+      "after_changes": [
+        "C01-C13"
+      ],
+      "convergence": {
+        "gnn_val": "10.25 +- 0.10",
+        "mlp_val": "7.79 +- 0.11",
+        "transfer_8_to_12": "12.52 (0 epochs to 95%) vs re-training 11.56 (51-63 epochs)"
+      },
+      "beamforming_K8_1W": {
+        "GNN": 12.14,
+        "OPT": 16.75,
+        "MLP": 8.93,
+        "ZF": 0.26,
+        "MRT": 2.84
+      },
+      "gnn_over_opt": {
+        "K=2": 0.72,
+        "K=8": 0.72,
+        "K=11": 0.7
+      },
+      "timing_seconds_per_inference_K8": {
+        "GNN": 0.0024,
+        "MLP": 0.0006,
+        "OPT": 3.91
+      },
       "deployment": {
-        "optimum_gnn": [58, 142], "paper_optimum": [56, 140], "optimum_distance_to_paper_m": 2.8,
-        "seed_optimum_distance_to_paper_m": [8.2, 2.8, 2.8],
-        "sac_final": [73.6, 154.5], "sac_to_optimum_m": 20.0, "sac_to_paper_optimum_m": 22.8,
-        "rates_bps_hz": {"Graph-DRL": 19.63, "Area center": 14.09, "Geometric center": 15.81, "Circumcenter": 16.77, "Polygon centroid": 15.55, "Exhaustive search": 21.16},
-        "graph_drl_vs_optimum_pct": 92.8, "graph_drl_gain_over_best_heuristic_pct": 17.0
+        "optimum_gnn": [
+          58,
+          142
+        ],
+        "paper_optimum": [
+          56,
+          140
+        ],
+        "optimum_distance_to_paper_m": 2.8,
+        "seed_optimum_distance_to_paper_m": [
+          8.2,
+          2.8,
+          2.8
+        ],
+        "sac_final": [
+          73.6,
+          154.5
+        ],
+        "sac_to_optimum_m": 20.0,
+        "sac_to_paper_optimum_m": 22.8,
+        "rates_bps_hz": {
+          "Graph-DRL": 19.63,
+          "Area center": 14.09,
+          "Geometric center": 15.81,
+          "Circumcenter": 16.77,
+          "Polygon centroid": 15.55,
+          "Exhaustive search": 21.16
+        },
+        "graph_drl_vs_optimum_pct": 92.8,
+        "graph_drl_gain_over_best_heuristic_pct": 17.0
       }
     },
     {
-      "id": "R6", "label": "FINAL reference profile (Table I as printed, GNN 256/50)", "after_changes": ["C01-C13 except C08"],
-      "convergence": {"gnn_val": "22.76 +- 3.01", "mlp_val": "20.91 +- 0.09", "transfer_8_to_12": "25.94 (never reaches 95%) vs re-training 28.60"},
-      "beamforming_K8_1W": {"GNN": 25.66, "OPT": 90.85, "MLP": 21.76, "ZF": 89.96},
-      "gnn_over_opt": {"K=2": 0.68, "K=8": 0.28, "K=11": 0.36},
-      "deployment": {"optimum_gnn": [90, 104], "optimum_distance_to_paper_m": 49.5, "sac_final": [87.4, 73.9],
-                     "graph_drl_vs_optimum_pct": 93.1, "graph_drl_gain_over_best_heuristic_pct": 4.8}
+      "id": "R6",
+      "label": "FINAL reference profile (Table I as printed, GNN 256/50)",
+      "after_changes": [
+        "C01-C13 except C08"
+      ],
+      "convergence": {
+        "gnn_val": "22.76 +- 3.01",
+        "mlp_val": "20.91 +- 0.09",
+        "transfer_8_to_12": "25.94 (never reaches 95%) vs re-training 28.60"
+      },
+      "beamforming_K8_1W": {
+        "GNN": 25.66,
+        "OPT": 90.85,
+        "MLP": 21.76,
+        "ZF": 89.96
+      },
+      "gnn_over_opt": {
+        "K=2": 0.68,
+        "K=8": 0.28,
+        "K=11": 0.36
+      },
+      "deployment": {
+        "optimum_gnn": [
+          90,
+          104
+        ],
+        "optimum_distance_to_paper_m": 49.5,
+        "sac_final": [
+          87.4,
+          73.9
+        ],
+        "graph_drl_vs_optimum_pct": 93.1,
+        "graph_drl_gain_over_best_heuristic_pct": 4.8
+      }
     }
   ],
-
   "tuning_knobs": [
-    {"key": "system.path_loss_log", "why": "Defines the shape of the deployment rate map; the single most influential unspecified choice.", "tested": [{"value": "log10", "outcome": "flat map, optimum 45-62 m from paper"}, {"value": "ln", "outcome": "optimum 3-17 m from paper"}]},
-    {"key": "system.distance_model", "why": "Path-loss distance: 3-D vs horizontal.", "tested": [{"value": "3d", "outcome": "optimum 10 m (ln, x-axis) but rate only 2.7 bps/Hz and Fig. 8 profile error 0.35"}, {"value": "horizontal", "outcome": "optimum 17 m, rate 30 bps/Hz, Fig. 8 profile error 0.15"}]},
-    {"key": "system.array_axis", "why": "Orientation of the ULA in the horizontal plane (the paper's Fig. 1 does not show it).", "tested": [{"value": "x", "outcome": "chosen"}, {"value": "y", "outcome": "optimum 25 m (ln, horizontal)"}]},
-    {"key": "system.noise_power_w", "why": "Table I value; SNR level of the whole system.", "tested": [{"value": "1.2e-13", "outcome": "Table I, kept"}, {"value": "1.2e-10", "outcome": "rejected: does not explain Fig. 7/8"}]},
-    {"key": "gnn.hidden_dim", "why": "Capacity of the GNN; decides how closely its rate map follows the true one.", "tested": [{"value": 128, "outcome": "under-fits (71-75% of OPT)"}, {"value": 256, "outcome": "chosen (74-76% of OPT)"}]},
-    {"key": "gnn.batches_per_epoch", "why": "Amount of fresh training data per epoch.", "tested": [{"value": 20, "outcome": "see hidden_dim"}, {"value": 50, "outcome": "chosen"}]},
-    {"key": "gnn.grad_clip", "why": "Training stability at lr 0.005.", "tested": [{"value": "none", "outcome": "collapsed near epoch 125"}, {"value": 1.0, "outcome": "stable, chosen"}]},
-    {"key": "sac.reward_scale", "why": "Critic conditioning (reward magnitude about 15-28).", "tested": [{"value": 1.0, "outcome": "SAC degraded after about 100 episodes"}, {"value": 0.1, "outcome": "chosen"}]},
-    {"key": "sac.obs_transform", "why": "Channel features span decades.", "tested": [{"value": "linear", "outcome": "unstable SAC"}, {"value": "log", "outcome": "chosen"}]},
-    {"key": "sac.max_step_m / sac.episode_length", "why": "Step size and horizon; decide how directly the UAV can fly to the optimum (the paper's trajectory is straighter than ours).", "tested": [{"value": "5 m / 100 steps", "outcome": "current; SAC stops 20 m from the optimum"}], "next_idea": "Try larger steps or longer episodes if a straighter trajectory is wanted."},
-    {"key": "eval.search_beamformer", "why": "Which beamformer defines the 'optimal' deployment.", "tested": [{"value": "opt", "outcome": "reference only"}, {"value": "gnn", "outcome": "chosen: constraint (24)"}]}
+    {
+      "key": "system.path_loss_log",
+      "why": "Defines the shape of the deployment rate map; the single most influential unspecified choice.",
+      "tested": [
+        {
+          "value": "log10",
+          "outcome": "flat map, optimum 45-62 m from paper"
+        },
+        {
+          "value": "ln",
+          "outcome": "optimum 3-17 m from paper"
+        }
+      ]
+    },
+    {
+      "key": "system.distance_model",
+      "why": "Path-loss distance: 3-D vs horizontal.",
+      "tested": [
+        {
+          "value": "3d",
+          "outcome": "optimum 10 m (ln, x-axis) but rate only 2.7 bps/Hz and Fig. 8 profile error 0.35"
+        },
+        {
+          "value": "horizontal",
+          "outcome": "optimum 17 m, rate 30 bps/Hz, Fig. 8 profile error 0.15"
+        }
+      ]
+    },
+    {
+      "key": "system.array_axis",
+      "why": "Orientation of the ULA in the horizontal plane (the paper's Fig. 1 does not show it).",
+      "tested": [
+        {
+          "value": "x",
+          "outcome": "chosen"
+        },
+        {
+          "value": "y",
+          "outcome": "optimum 25 m (ln, horizontal)"
+        }
+      ]
+    },
+    {
+      "key": "system.noise_power_w",
+      "why": "Table I value; SNR level of the whole system.",
+      "tested": [
+        {
+          "value": "1.2e-13",
+          "outcome": "Table I, kept"
+        },
+        {
+          "value": "1.2e-10",
+          "outcome": "rejected: does not explain Fig. 7/8"
+        }
+      ]
+    },
+    {
+      "key": "gnn.hidden_dim",
+      "why": "Capacity of the GNN; decides how closely its rate map follows the true one.",
+      "tested": [
+        {
+          "value": 128,
+          "outcome": "under-fits (71% of OPT)"
+        },
+        {
+          "value": 256,
+          "outcome": "72% with constant lr, 81-82% with cosine"
+        },
+        {
+          "value": 512,
+          "outcome": "chosen: 84% with cosine"
+        },
+        {
+          "value": 1024,
+          "outcome": "collapses at lr 0.005"
+        }
+      ]
+    },
+    {
+      "key": "gnn.batches_per_epoch",
+      "why": "Amount of fresh training data per epoch.",
+      "tested": [
+        {
+          "value": 20,
+          "outcome": "see hidden_dim"
+        },
+        {
+          "value": 50,
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "gnn.grad_clip",
+      "why": "Training stability at lr 0.005.",
+      "tested": [
+        {
+          "value": "none",
+          "outcome": "collapsed near epoch 125"
+        },
+        {
+          "value": 1.0,
+          "outcome": "stable, chosen"
+        }
+      ]
+    },
+    {
+      "key": "sac.reward_scale",
+      "why": "Critic conditioning (reward magnitude about 15-28).",
+      "tested": [
+        {
+          "value": 1.0,
+          "outcome": "SAC degraded after about 100 episodes"
+        },
+        {
+          "value": 0.1,
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "sac.obs_transform",
+      "why": "Channel features span decades.",
+      "tested": [
+        {
+          "value": "linear",
+          "outcome": "unstable SAC"
+        },
+        {
+          "value": "log",
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "sac.max_step_m / sac.episode_length",
+      "why": "Step size and horizon; decide how directly the UAV can fly to the optimum (the paper's trajectory is straighter than ours).",
+      "tested": [
+        {
+          "value": "5 m / 100",
+          "outcome": "20 m from optimum, jitter about 5 m"
+        },
+        {
+          "value": "5 m / 200",
+          "outcome": "13.4 m"
+        },
+        {
+          "value": "2.5 m / 100",
+          "outcome": "cannot reach the optimum"
+        },
+        {
+          "value": "2.5 m / 200 (1 grad step)",
+          "outcome": "56.9 m"
+        },
+        {
+          "value": "2.5 m / 175 (2 grad steps)",
+          "outcome": "chosen: 3.9 m, jitter 1.0 m"
+        }
+      ]
+    },
+    {
+      "key": "eval.search_beamformer",
+      "why": "Which beamformer defines the 'optimal' deployment.",
+      "tested": [
+        {
+          "value": "opt",
+          "outcome": "reference only"
+        },
+        {
+          "value": "gnn",
+          "outcome": "chosen: constraint (24)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.lr_schedule",
+      "why": "Learning-rate schedule (Table I fixes only the value 0.005).",
+      "tested": [
+        {
+          "value": "constant",
+          "outcome": "plateau at about 72% of OPT"
+        },
+        {
+          "value": "cosine",
+          "outcome": "chosen (user-approved): 77-84%"
+        }
+      ]
+    },
+    {
+      "key": "system.min_distance_m",
+      "why": "Lower clamp of the path-loss distance; decides whether unphysical spikes appear right above users.",
+      "tested": [
+        {
+          "value": 1,
+          "outcome": "spikes; better GNNs jump onto them (37-80 m off)"
+        },
+        {
+          "value": 20,
+          "outcome": "chosen: 7-11 m (3 seeds), 0 m with hidden 512"
+        },
+        {
+          "value": 50,
+          "outcome": "optimum 33 m off"
+        },
+        {
+          "value": 100,
+          "outcome": "flat, 37 m off"
+        }
+      ]
+    },
+    {
+      "key": "sac.gradient_steps",
+      "why": "Sample efficiency of SAC.",
+      "tested": [
+        {
+          "value": 1,
+          "outcome": "20 m from optimum"
+        },
+        {
+          "value": 2,
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "gnn.input_transform",
+      "why": "Channel dynamic range.",
+      "tested": [
+        {
+          "value": "linear",
+          "outcome": "chosen"
+        },
+        {
+          "value": "log",
+          "outcome": "no gain (256) or broken (512)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.uav_near_user_frac",
+      "why": "Training distribution of the UAV position.",
+      "tested": [
+        {
+          "value": 0.0,
+          "outcome": "chosen"
+        },
+        {
+          "value": 0.5,
+          "outcome": "no gain"
+        }
+      ]
+    }
   ],
-
   "open_issues": [
     "GNN reaches only about 72% of our OPT on the calibrated model (paper: near-optimal). OPT is our own substitute for [45]; no direct comparison is possible.",
-    "SAC trajectory winds around and stops 20 m from the optimum; the paper's is a straighter path ending at the optimum.",
     "Fig. 8 heuristics reach 67-79% of the optimum here vs 39-61% in the paper (same ordering, smaller gaps).",
     "GNN at K=1 fails (no neighbours -> zero aggregate, never seen in training); MLP is better there.",
     "GNN trained at 1 W does not extrapolate in transmit power (saturates at 40 dBm); the paper's GNN tracks OPT.",

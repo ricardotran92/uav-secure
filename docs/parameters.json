@@ -132,6 +132,13 @@
         "default_value": "3d"
       },
       {
+        "key": "system.min_distance_m",
+        "value": 20.0,
+        "source": "calibrated",
+        "note": "assumption: path-loss distance is clamped below at this value",
+        "default_value": 1.0
+      },
+      {
         "key": "system.array_axis",
         "value": "x",
         "source": "calibrated",
@@ -148,9 +155,9 @@
       },
       {
         "key": "gnn.hidden_dim",
-        "value": 256,
+        "value": 512,
         "source": "assumption",
-        "note": "assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)"
+        "note": "assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)"
       },
       {
         "key": "gnn.lr",
@@ -202,9 +209,27 @@
       },
       {
         "key": "gnn.lr_schedule",
-        "value": "constant",
+        "value": "cosine",
         "source": "assumption",
-        "note": "assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)"
+        "note": "assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)"
+      },
+      {
+        "key": "gnn.input_transform",
+        "value": "linear",
+        "source": "assumption",
+        "note": "assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP"
+      },
+      {
+        "key": "gnn.uav_near_user_frac",
+        "value": 0.0,
+        "source": "assumption",
+        "note": "assumption: share of training samples with the UAV around a random user (rest uniform)"
+      },
+      {
+        "key": "gnn.uav_near_user_std_m",
+        "value": 30.0,
+        "source": "assumption",
+        "note": "assumption: spread (m) of those UAV positions around the user"
       },
       {
         "key": "mlp.hidden_dims",
@@ -240,9 +265,9 @@
       },
       {
         "key": "sac.episode_length",
-        "value": 100,
+        "value": 175,
         "source": "assumption",
-        "note": "assumption: steps per episode"
+        "note": "assumption: Fig. 6 reward / secrecy-rate ratio suggests ~170-180 steps"
       },
       {
         "key": "sac.batch_size",
@@ -291,9 +316,9 @@
       },
       {
         "key": "sac.max_step_m",
-        "value": 5.0,
+        "value": 2.5,
         "source": "assumption",
-        "note": "assumption: action [-1,1]^2 scaled to metres"
+        "note": "assumption: action [-1,1]^2 scaled to metres (smoother trajectory than 5 m)"
       },
       {
         "key": "sac.topology_seed",
@@ -327,13 +352,13 @@
       },
       {
         "key": "sac.gradient_steps",
-        "value": 1,
+        "value": 2,
         "source": "assumption",
         "note": "assumption: SAC gradient updates per environment step"
       },
       {
         "key": "sac.eval_episodes",
-        "value": 1,
+        "value": 3,
         "source": "assumption",
         "note": "assumption: deterministic episodes averaged per evaluation"
       },
@@ -624,6 +649,12 @@
         "note": "assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h"
       },
       {
+        "key": "system.min_distance_m",
+        "value": 1.0,
+        "source": "assumption",
+        "note": "assumption: path-loss distance is clamped below at this value"
+      },
+      {
         "key": "system.array_axis",
         "value": "x",
         "source": "assumption",
@@ -639,9 +670,9 @@
       },
       {
         "key": "gnn.hidden_dim",
-        "value": 256,
+        "value": 512,
         "source": "assumption",
-        "note": "assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)"
+        "note": "assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)"
       },
       {
         "key": "gnn.lr",
@@ -693,9 +724,27 @@
       },
       {
         "key": "gnn.lr_schedule",
-        "value": "constant",
+        "value": "cosine",
         "source": "assumption",
-        "note": "assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)"
+        "note": "assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)"
+      },
+      {
+        "key": "gnn.input_transform",
+        "value": "linear",
+        "source": "assumption",
+        "note": "assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP"
+      },
+      {
+        "key": "gnn.uav_near_user_frac",
+        "value": 0.0,
+        "source": "assumption",
+        "note": "assumption: share of training samples with the UAV around a random user (rest uniform)"
+      },
+      {
+        "key": "gnn.uav_near_user_std_m",
+        "value": 30.0,
+        "source": "assumption",
+        "note": "assumption: spread (m) of those UAV positions around the user"
       },
       {
         "key": "mlp.hidden_dims",
@@ -731,9 +780,9 @@
       },
       {
         "key": "sac.episode_length",
-        "value": 100,
+        "value": 175,
         "source": "assumption",
-        "note": "assumption: steps per episode"
+        "note": "assumption: Fig. 6 reward / secrecy-rate ratio suggests ~170-180 steps"
       },
       {
         "key": "sac.batch_size",
@@ -782,9 +831,9 @@
       },
       {
         "key": "sac.max_step_m",
-        "value": 5.0,
+        "value": 2.5,
         "source": "assumption",
-        "note": "assumption: action [-1,1]^2 scaled to metres"
+        "note": "assumption: action [-1,1]^2 scaled to metres (smoother trajectory than 5 m)"
       },
       {
         "key": "sac.topology_seed",
@@ -818,13 +867,13 @@
       },
       {
         "key": "sac.gradient_steps",
-        "value": 1,
+        "value": 2,
         "source": "assumption",
         "note": "assumption: SAC gradient updates per environment step"
       },
       {
         "key": "sac.eval_episodes",
-        "value": 1,
+        "value": 3,
         "source": "assumption",
         "note": "assumption: deterministic episodes averaged per evaluation"
       },
@@ -1071,11 +1120,19 @@
       "tested": [
         {
           "value": 128,
-          "outcome": "under-fits (71-75% of OPT)"
+          "outcome": "under-fits (71% of OPT)"
         },
         {
           "value": 256,
-          "outcome": "chosen (74-76% of OPT)"
+          "outcome": "72% with constant lr, 81-82% with cosine"
+        },
+        {
+          "value": 512,
+          "outcome": "chosen: 84% with cosine"
+        },
+        {
+          "value": 1024,
+          "outcome": "collapses at lr 0.005"
         }
       ]
     },
@@ -1140,11 +1197,26 @@
       "why": "Step size and horizon; decide how directly the UAV can fly to the optimum (the paper's trajectory is straighter than ours).",
       "tested": [
         {
-          "value": "5 m / 100 steps",
-          "outcome": "current; SAC stops 20 m from the optimum"
+          "value": "5 m / 100",
+          "outcome": "20 m from optimum, jitter about 5 m"
+        },
+        {
+          "value": "5 m / 200",
+          "outcome": "13.4 m"
+        },
+        {
+          "value": "2.5 m / 100",
+          "outcome": "cannot reach the optimum"
+        },
+        {
+          "value": "2.5 m / 200 (1 grad step)",
+          "outcome": "56.9 m"
+        },
+        {
+          "value": "2.5 m / 175 (2 grad steps)",
+          "outcome": "chosen: 3.9 m, jitter 1.0 m"
         }
-      ],
-      "next_idea": "Try larger steps or longer episodes if a straighter trajectory is wanted."
+      ]
     },
     {
       "key": "eval.search_beamformer",
@@ -1157,6 +1229,84 @@
         {
           "value": "gnn",
           "outcome": "chosen: constraint (24)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.lr_schedule",
+      "why": "Learning-rate schedule (Table I fixes only the value 0.005).",
+      "tested": [
+        {
+          "value": "constant",
+          "outcome": "plateau at about 72% of OPT"
+        },
+        {
+          "value": "cosine",
+          "outcome": "chosen (user-approved): 77-84%"
+        }
+      ]
+    },
+    {
+      "key": "system.min_distance_m",
+      "why": "Lower clamp of the path-loss distance; decides whether unphysical spikes appear right above users.",
+      "tested": [
+        {
+          "value": 1,
+          "outcome": "spikes; better GNNs jump onto them (37-80 m off)"
+        },
+        {
+          "value": 20,
+          "outcome": "chosen: 7-11 m (3 seeds), 0 m with hidden 512"
+        },
+        {
+          "value": 50,
+          "outcome": "optimum 33 m off"
+        },
+        {
+          "value": 100,
+          "outcome": "flat, 37 m off"
+        }
+      ]
+    },
+    {
+      "key": "sac.gradient_steps",
+      "why": "Sample efficiency of SAC.",
+      "tested": [
+        {
+          "value": 1,
+          "outcome": "20 m from optimum"
+        },
+        {
+          "value": 2,
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "gnn.input_transform",
+      "why": "Channel dynamic range.",
+      "tested": [
+        {
+          "value": "linear",
+          "outcome": "chosen"
+        },
+        {
+          "value": "log",
+          "outcome": "no gain (256) or broken (512)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.uav_near_user_frac",
+      "why": "Training distribution of the UAV position.",
+      "tested": [
+        {
+          "value": 0.0,
+          "outcome": "chosen"
+        },
+        {
+          "value": 0.5,
+          "outcome": "no gain"
         }
       ]
     }
