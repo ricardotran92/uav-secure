@@ -30,6 +30,8 @@ class SystemConfig:
     path_loss_b: float
     eve_distance: float
     antenna_spacing: float
+    distance_model: str
+    array_axis: str
 
 
 @dataclass
@@ -103,6 +105,12 @@ class Config:
     sac: SACConfig
     opt: OptConfig
     eval: EvalConfig
+
+    def __post_init__(self) -> None:
+        if self.system.distance_model not in ("3d", "horizontal"):
+            raise ValueError(f"system.distance_model must be '3d' or 'horizontal', got {self.system.distance_model!r}")
+        if self.system.array_axis not in ("x", "y"):
+            raise ValueError(f"system.array_axis must be 'x' or 'y', got {self.system.array_axis!r}")
 
     def to_dict(self) -> dict[str, Any]:
         return dataclasses.asdict(self)

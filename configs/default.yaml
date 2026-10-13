@@ -18,6 +18,8 @@ system:
   path_loss_b: 22.0
   eve_distance: 20.0        # eavesdropper "about 20 m" from its user
   antenna_spacing: 0.5      # assumption: half-wavelength ULA
+  distance_model: 3d        # assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h
+  array_axis: x             # assumption: ULA orientation in the horizontal plane (x | y)
 
 gnn:
   num_layers: 5             # D GCN layers

@@ -26,9 +26,13 @@ def zero_forcing(h: torch.Tensor, power: float) -> torch.Tensor:
     return normalize_power(w_cols.transpose(-1, -2), power)
 
 
+@torch.enable_grad()
 def optimize_beamforming(h: torch.Tensor, h_e: torch.Tensor, power: float, cfg: OptConfig,
                          gen: torch.Generator) -> tuple[torch.Tensor, torch.Tensor]:
-    """Return the best beamformers (B, K, N) and their sum secrecy rates (B,)."""
+    """Return the best beamformers (B, K, N) and their sum secrecy rates (B,).
+
+    Gradients are enabled internally, so it can be called inside ``torch.no_grad()``.
+    """
     b, k, n = h.shape
     r = max(cfg.restarts, 2)
     # Optimise in unit-power coordinates so the step size does not depend on P.

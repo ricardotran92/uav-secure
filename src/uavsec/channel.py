@@ -24,6 +24,10 @@ import yaml
 from .config import REPO_ROOT, SystemConfig
 
 
+AXES = {"x": 0, "y": 1}          # ULA orientation -> coordinate used for the direction cosine
+DISTANCE_MODELS = ("3d", "horizontal")
+
+
 @dataclass
 class Scenario:
     """Ground-node layout of a batch of network instances."""
@@ -109,12 +113,16 @@ def rician_channels(sys: SystemConfig, uav: torch.Tensor, nodes: torch.Tensor,
     """
     sigma2 = sys.noise_power_w if noise_power_w is None else noise_power_w
     delta = nodes - uav.unsqueeze(1)                                   # (B, K, 2)
-    dist = torch.sqrt((delta ** 2).sum(-1) + sys.uav_altitude ** 2)   # (B, K) 3-D distance
-    los = steering_vector(delta[..., 0] / dist, sys.num_antennas, sys.antenna_spacing)
+    horizontal = delta.norm(dim=-1)                                    # (B, K)
+    dist_3d = torch.sqrt(horizontal ** 2 + sys.uav_altitude ** 2)
+    # The LoS direction is always geometric (3-D); only the path-loss distance is configurable.
+    pl_dist = dist_3d if sys.distance_model == "3d" else horizontal.clamp_min(1.0)
+    axis = AXES[sys.array_axis]
+    los = steering_vector(delta[..., axis] / dist_3d, sys.num_antennas, sys.antenna_spacing)
     nlos = complex_normal(los.shape, gen, uav.device)
     kappa = 10.0 ** (sys.rician_factor_db / 10.0)
     small_scale = math.sqrt(kappa / (kappa + 1)) * los + math.sqrt(1 / (kappa + 1)) * nlos
-    amplitude = torch.sqrt(path_gain(sys, dist) / sigma2).unsqueeze(-1)
+    amplitude = torch.sqrt(path_gain(sys, pl_dist) / sigma2).unsqueeze(-1)
     return amplitude * small_scale
 
 

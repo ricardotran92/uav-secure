@@ -6,15 +6,19 @@ inner layer the SAC agent uses for its reward.
 """
 from __future__ import annotations
 
+from typing import Callable
+
 import numpy as np
 import torch
 from scipy.spatial import ConvexHull, QhullError
 
 from ..channel import Scenario, channels
 from ..config import SystemConfig
-from ..models import Beamformer
 from ..secrecy import sum_secrecy_rate
 from ..utils import make_generator
+
+# (h, h_E, P) -> beamformers W; satisfied by trained networks and by the OPT solver.
+BeamformFn = Callable[[torch.Tensor, torch.Tensor, float], torch.Tensor]
 
 
 def min_enclosing_circle_center(points: np.ndarray) -> np.ndarray:
@@ -81,10 +85,11 @@ def heuristic_positions(users: np.ndarray, area_size: float) -> dict[str, np.nda
 
 
 @torch.no_grad()
-def expected_rate(positions: torch.Tensor, scenario: Scenario, model: Beamformer, sys: SystemConfig,
+def expected_rate(positions: torch.Tensor, scenario: Scenario, model: BeamformFn, sys: SystemConfig,
                   fading_samples: int, seed: int, chunk: int = 32768) -> tuple[torch.Tensor, torch.Tensor]:
     """Mean and std (over fading) of the sum secrecy rate for UAV ``positions`` (P, 2).
 
+    ``model`` maps (h, h_E, P) to beamformers: a trained network or e.g. the OPT solver.
     ``scenario`` is a single instance. The fading generator is re-seeded on every
     call, so different strategies are compared under common random numbers.
     """
@@ -99,7 +104,7 @@ def expected_rate(positions: torch.Tensor, scenario: Scenario, model: Beamformer
     return rates.mean(dim=1), rates.std(dim=1)
 
 
-def exhaustive_search(scenario: Scenario, model: Beamformer, sys: SystemConfig, step_m: float,
+def exhaustive_search(scenario: Scenario, model: BeamformFn, sys: SystemConfig, step_m: float,
                       fading_samples: int, seed: int, refine_top: int) -> dict[str, np.ndarray]:
     """Grid search of the expected secrecy rate over the whole area.
 
