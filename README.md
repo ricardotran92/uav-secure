@@ -70,6 +70,12 @@ cd uav-secure && tmux new -d -s uavsec 'GPU=2 bash scripts/server/run_all.sh 2>&
 scripts/server/sync.sh pull                       # fetch outputs back
 ```
 
+## Documentation
+
+- [docs/MODEL_HISTORY.md](docs/MODEL_HISTORY.md): architecture, timeline of every change with reason and evidence, result snapshots, open issues.
+- [docs/PARAMETERS.md](docs/PARAMETERS.md) / [docs/parameters.json](docs/parameters.json): current parameters, each marked as paper value, assumption or calibrated choice, with the alternatives already tried.
+- Regenerate after changing configs: `python scripts/export_docs.py` (history is kept in `docs/history.json`).
+
 ## Deviations from the paper
 
 - **OPT baseline.** The optimisation scheme of [45] is not described in the paper. It is replaced by per-instance

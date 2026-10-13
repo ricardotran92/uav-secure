@@ -1,0 +1,1128 @@
+{
+  "legend": {
+    "paper": {
+      "marker": "\ud83d\udfe2",
+      "name": "PAPER",
+      "meaning": "value printed in the paper"
+    },
+    "assumption": {
+      "marker": "\ud83d\udfe1",
+      "name": "ASSUMPTION",
+      "meaning": "paper silent; our choice"
+    },
+    "calibrated": {
+      "marker": "\ud83d\udd34",
+      "name": "CALIBRATED",
+      "meaning": "interpretation chosen to reproduce Fig. 7/8; differs from the 'standard' reading"
+    },
+    "implementation": {
+      "marker": "\u26aa",
+      "name": "IMPLEMENTATION",
+      "meaning": "engineering setting, not part of the paper's model"
+    }
+  },
+  "profiles": {
+    "main (calibrated)": [
+      {
+        "key": "system.area_size",
+        "value": 200.0,
+        "source": "paper",
+        "note": "m, square area [0, A] x [0, A]",
+        "paper_value": 200.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.num_users",
+        "value": 8,
+        "source": "paper",
+        "note": "K legitimate users (= K eavesdroppers)",
+        "paper_value": 8,
+        "matches_paper": true
+      },
+      {
+        "key": "system.num_antennas",
+        "value": 8,
+        "source": "paper",
+        "note": "N antennas at the UAV",
+        "paper_value": 8,
+        "matches_paper": true
+      },
+      {
+        "key": "system.uav_altitude",
+        "value": 100.0,
+        "source": "paper",
+        "note": "m",
+        "paper_value": 100.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.rician_factor_db",
+        "value": 10.0,
+        "source": "paper",
+        "note": "",
+        "paper_value": 10.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.bandwidth_hz",
+        "value": 1.0,
+        "source": "paper",
+        "note": "rates are reported in bps/Hz",
+        "paper_value": 1.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.power_max_w",
+        "value": 1.0,
+        "source": "paper",
+        "note": "P^max",
+        "paper_value": 1.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.noise_power_w",
+        "value": 1.2e-13,
+        "source": "paper",
+        "note": "sigma_0^2",
+        "paper_value": 1.2e-13,
+        "matches_paper": true
+      },
+      {
+        "key": "system.path_loss_a_db",
+        "value": 30.0,
+        "source": "paper",
+        "note": "LoS path loss 30 + 22 log10(d) dB  [44]",
+        "paper_value": 30.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.path_loss_b",
+        "value": 22.0,
+        "source": "paper",
+        "note": "",
+        "paper_value": 22.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.path_loss_log",
+        "value": "ln",
+        "source": "calibrated",
+        "note": "the paper writes \"log(d)\": log10 (standard) | ln",
+        "default_value": "log10"
+      },
+      {
+        "key": "system.eve_distance",
+        "value": 20.0,
+        "source": "paper",
+        "note": "eavesdropper \"about 20 m\" from its user",
+        "paper_value": 20.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.antenna_spacing",
+        "value": 0.5,
+        "source": "assumption",
+        "note": "assumption: half-wavelength ULA"
+      },
+      {
+        "key": "system.distance_model",
+        "value": "horizontal",
+        "source": "calibrated",
+        "note": "assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h",
+        "default_value": "3d"
+      },
+      {
+        "key": "system.array_axis",
+        "value": "x",
+        "source": "calibrated",
+        "note": "assumption: ULA orientation in the horizontal plane (x | y)",
+        "default_value": "x"
+      },
+      {
+        "key": "gnn.num_layers",
+        "value": 5,
+        "source": "paper",
+        "note": "D GCN layers",
+        "paper_value": 5,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.hidden_dim",
+        "value": 256,
+        "source": "assumption",
+        "note": "assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)"
+      },
+      {
+        "key": "gnn.lr",
+        "value": 0.005,
+        "source": "paper",
+        "note": "",
+        "paper_value": 0.005,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.epochs",
+        "value": 300,
+        "source": "paper",
+        "note": "\"GNN train episodes\"",
+        "paper_value": 300,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.batch_size",
+        "value": 512,
+        "source": "paper",
+        "note": "",
+        "paper_value": 512,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.batches_per_epoch",
+        "value": 50,
+        "source": "assumption",
+        "note": "assumption: fresh mini-batches per epoch"
+      },
+      {
+        "key": "gnn.val_samples",
+        "value": 2048,
+        "source": "assumption",
+        "note": "assumption: fixed validation set"
+      },
+      {
+        "key": "gnn.clamp_loss",
+        "value": true,
+        "source": "implementation",
+        "note": "use (.)^+ in the loss as in eq. (22)"
+      },
+      {
+        "key": "gnn.grad_clip",
+        "value": 1.0,
+        "source": "assumption",
+        "note": "assumption: gradient-norm clipping (training diverged without it)"
+      },
+      {
+        "key": "mlp.hidden_dims",
+        "value": [
+          512,
+          512,
+          512
+        ],
+        "source": "assumption",
+        "note": "assumption"
+      },
+      {
+        "key": "mlp.lr",
+        "value": 0.001,
+        "source": "assumption",
+        "note": "assumption (0.005 diverges for the wider MLP)"
+      },
+      {
+        "key": "sac.lr",
+        "value": 0.0003,
+        "source": "paper",
+        "note": "",
+        "paper_value": 0.0003,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.episodes",
+        "value": 500,
+        "source": "paper",
+        "note": "",
+        "paper_value": 500,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.episode_length",
+        "value": 100,
+        "source": "assumption",
+        "note": "assumption: steps per episode"
+      },
+      {
+        "key": "sac.batch_size",
+        "value": 64,
+        "source": "paper",
+        "note": "",
+        "paper_value": 64,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.buffer_size",
+        "value": 1000000,
+        "source": "paper",
+        "note": "",
+        "paper_value": 1000000,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.gamma",
+        "value": 0.99,
+        "source": "paper",
+        "note": "discount factor eta",
+        "paper_value": 0.99,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.tau",
+        "value": 0.005,
+        "source": "assumption",
+        "note": "assumption: SB3 default soft-update rate"
+      },
+      {
+        "key": "sac.learning_starts",
+        "value": 1000,
+        "source": "assumption",
+        "note": "assumption"
+      },
+      {
+        "key": "sac.net_arch",
+        "value": [
+          256,
+          256
+        ],
+        "source": "assumption",
+        "note": "assumption"
+      },
+      {
+        "key": "sac.max_step_m",
+        "value": 5.0,
+        "source": "assumption",
+        "note": "assumption: action [-1,1]^2 scaled to metres"
+      },
+      {
+        "key": "sac.topology_seed",
+        "value": 2025,
+        "source": "implementation",
+        "note": "fixed user/eavesdropper layout for the run"
+      },
+      {
+        "key": "sac.layout_file",
+        "value": "configs/layouts/paper_fig7.yaml",
+        "source": "implementation",
+        "note": "fixed layout of Fig. 7; \"\" = random layout from topology_seed"
+      },
+      {
+        "key": "sac.obs_transform",
+        "value": "log",
+        "source": "assumption",
+        "note": "assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)"
+      },
+      {
+        "key": "sac.reward_scale",
+        "value": 0.1,
+        "source": "assumption",
+        "note": "assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec"
+      },
+      {
+        "key": "sac.eval_every_episodes",
+        "value": 10,
+        "source": "assumption",
+        "note": "assumption: deterministic evaluation interval; the best policy is kept"
+      },
+      {
+        "key": "opt.restarts",
+        "value": 16,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "opt.iters",
+        "value": 500,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "opt.lr",
+        "value": 0.02,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.test_samples",
+        "value": 256,
+        "source": "implementation",
+        "note": "instances per sweep point"
+      },
+      {
+        "key": "eval.fading_samples",
+        "value": 32,
+        "source": "implementation",
+        "note": "small-scale fading draws for position evaluation"
+      },
+      {
+        "key": "eval.grid_step_m",
+        "value": 2.0,
+        "source": "implementation",
+        "note": "exhaustive deployment search resolution"
+      },
+      {
+        "key": "eval.search_refine_top",
+        "value": 25,
+        "source": "implementation",
+        "note": "best grid points re-scored with 8x more fading draws"
+      },
+      {
+        "key": "eval.search_beamformer",
+        "value": "gnn",
+        "source": "implementation",
+        "note": "beamformer in the exhaustive deployment search: gnn (problem (23)-(25), W = GNN output, eq. (24)) | opt"
+      },
+      {
+        "key": "eval.search_opt_restarts",
+        "value": 4,
+        "source": "implementation",
+        "note": "OPT budget per grid point (smaller than the benchmark OPT: ~1e4 points)"
+      },
+      {
+        "key": "eval.search_opt_iters",
+        "value": 150,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.uav_position",
+        "value": "center",
+        "source": "implementation",
+        "note": "center | random  (UAV position in beamforming sweeps)"
+      },
+      {
+        "key": "eval.sweep_users",
+        "value": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.sweep_power_dbm",
+        "value": [
+          -20.0,
+          -10.0,
+          0.0,
+          10.0,
+          20.0,
+          30.0,
+          40.0
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.sweep_noise_w",
+        "value": [
+          3e-14,
+          6e-14,
+          1.2e-13,
+          2.4e-13,
+          4.8e-13,
+          9.6e-13
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.cdf_users",
+        "value": [
+          8,
+          12
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.timing_users",
+        "value": [
+          2,
+          4,
+          6,
+          8,
+          10
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.timing_runs",
+        "value": 400,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.transfer_users",
+        "value": 12,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.transfer_epochs",
+        "value": 100,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.convergence_seeds",
+        "value": [
+          0,
+          1,
+          2
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "seed",
+        "value": 0,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "device",
+        "value": "auto",
+        "source": "implementation",
+        "note": "auto | cpu | cuda | cuda:0 ..."
+      },
+      {
+        "key": "output_dir",
+        "value": "outputs/runs_calibrated",
+        "source": "implementation",
+        "note": ""
+      }
+    ],
+    "reference (Table I as printed)": [
+      {
+        "key": "system.area_size",
+        "value": 200.0,
+        "source": "paper",
+        "note": "m, square area [0, A] x [0, A]",
+        "paper_value": 200.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.num_users",
+        "value": 8,
+        "source": "paper",
+        "note": "K legitimate users (= K eavesdroppers)",
+        "paper_value": 8,
+        "matches_paper": true
+      },
+      {
+        "key": "system.num_antennas",
+        "value": 8,
+        "source": "paper",
+        "note": "N antennas at the UAV",
+        "paper_value": 8,
+        "matches_paper": true
+      },
+      {
+        "key": "system.uav_altitude",
+        "value": 100.0,
+        "source": "paper",
+        "note": "m",
+        "paper_value": 100.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.rician_factor_db",
+        "value": 10.0,
+        "source": "paper",
+        "note": "",
+        "paper_value": 10.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.bandwidth_hz",
+        "value": 1.0,
+        "source": "paper",
+        "note": "rates are reported in bps/Hz",
+        "paper_value": 1.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.power_max_w",
+        "value": 1.0,
+        "source": "paper",
+        "note": "P^max",
+        "paper_value": 1.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.noise_power_w",
+        "value": 1.2e-13,
+        "source": "paper",
+        "note": "sigma_0^2",
+        "paper_value": 1.2e-13,
+        "matches_paper": true
+      },
+      {
+        "key": "system.path_loss_a_db",
+        "value": 30.0,
+        "source": "paper",
+        "note": "LoS path loss 30 + 22 log10(d) dB  [44]",
+        "paper_value": 30.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.path_loss_b",
+        "value": 22.0,
+        "source": "paper",
+        "note": "",
+        "paper_value": 22.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.path_loss_log",
+        "value": "log10",
+        "source": "implementation",
+        "note": "the paper writes \"log(d)\": log10 (standard) | ln"
+      },
+      {
+        "key": "system.eve_distance",
+        "value": 20.0,
+        "source": "paper",
+        "note": "eavesdropper \"about 20 m\" from its user",
+        "paper_value": 20.0,
+        "matches_paper": true
+      },
+      {
+        "key": "system.antenna_spacing",
+        "value": 0.5,
+        "source": "assumption",
+        "note": "assumption: half-wavelength ULA"
+      },
+      {
+        "key": "system.distance_model",
+        "value": "3d",
+        "source": "assumption",
+        "note": "assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h"
+      },
+      {
+        "key": "system.array_axis",
+        "value": "x",
+        "source": "assumption",
+        "note": "assumption: ULA orientation in the horizontal plane (x | y)"
+      },
+      {
+        "key": "gnn.num_layers",
+        "value": 5,
+        "source": "paper",
+        "note": "D GCN layers",
+        "paper_value": 5,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.hidden_dim",
+        "value": 256,
+        "source": "assumption",
+        "note": "assumption (128 under-fits: its rate map, hence its Fig. 7 optimum, drifts; see study_gnn_optimum.py)"
+      },
+      {
+        "key": "gnn.lr",
+        "value": 0.005,
+        "source": "paper",
+        "note": "",
+        "paper_value": 0.005,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.epochs",
+        "value": 300,
+        "source": "paper",
+        "note": "\"GNN train episodes\"",
+        "paper_value": 300,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.batch_size",
+        "value": 512,
+        "source": "paper",
+        "note": "",
+        "paper_value": 512,
+        "matches_paper": true
+      },
+      {
+        "key": "gnn.batches_per_epoch",
+        "value": 50,
+        "source": "assumption",
+        "note": "assumption: fresh mini-batches per epoch"
+      },
+      {
+        "key": "gnn.val_samples",
+        "value": 2048,
+        "source": "assumption",
+        "note": "assumption: fixed validation set"
+      },
+      {
+        "key": "gnn.clamp_loss",
+        "value": true,
+        "source": "implementation",
+        "note": "use (.)^+ in the loss as in eq. (22)"
+      },
+      {
+        "key": "gnn.grad_clip",
+        "value": 1.0,
+        "source": "assumption",
+        "note": "assumption: gradient-norm clipping (training diverged without it)"
+      },
+      {
+        "key": "mlp.hidden_dims",
+        "value": [
+          512,
+          512,
+          512
+        ],
+        "source": "assumption",
+        "note": "assumption"
+      },
+      {
+        "key": "mlp.lr",
+        "value": 0.001,
+        "source": "assumption",
+        "note": "assumption (0.005 diverges for the wider MLP)"
+      },
+      {
+        "key": "sac.lr",
+        "value": 0.0003,
+        "source": "paper",
+        "note": "",
+        "paper_value": 0.0003,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.episodes",
+        "value": 500,
+        "source": "paper",
+        "note": "",
+        "paper_value": 500,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.episode_length",
+        "value": 100,
+        "source": "assumption",
+        "note": "assumption: steps per episode"
+      },
+      {
+        "key": "sac.batch_size",
+        "value": 64,
+        "source": "paper",
+        "note": "",
+        "paper_value": 64,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.buffer_size",
+        "value": 1000000,
+        "source": "paper",
+        "note": "",
+        "paper_value": 1000000,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.gamma",
+        "value": 0.99,
+        "source": "paper",
+        "note": "discount factor eta",
+        "paper_value": 0.99,
+        "matches_paper": true
+      },
+      {
+        "key": "sac.tau",
+        "value": 0.005,
+        "source": "assumption",
+        "note": "assumption: SB3 default soft-update rate"
+      },
+      {
+        "key": "sac.learning_starts",
+        "value": 1000,
+        "source": "assumption",
+        "note": "assumption"
+      },
+      {
+        "key": "sac.net_arch",
+        "value": [
+          256,
+          256
+        ],
+        "source": "assumption",
+        "note": "assumption"
+      },
+      {
+        "key": "sac.max_step_m",
+        "value": 5.0,
+        "source": "assumption",
+        "note": "assumption: action [-1,1]^2 scaled to metres"
+      },
+      {
+        "key": "sac.topology_seed",
+        "value": 2025,
+        "source": "implementation",
+        "note": "fixed user/eavesdropper layout for the run"
+      },
+      {
+        "key": "sac.layout_file",
+        "value": "configs/layouts/paper_fig7.yaml",
+        "source": "implementation",
+        "note": "fixed layout of Fig. 7; \"\" = random layout from topology_seed"
+      },
+      {
+        "key": "sac.obs_transform",
+        "value": "log",
+        "source": "assumption",
+        "note": "assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)"
+      },
+      {
+        "key": "sac.reward_scale",
+        "value": 0.1,
+        "source": "assumption",
+        "note": "assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec"
+      },
+      {
+        "key": "sac.eval_every_episodes",
+        "value": 10,
+        "source": "assumption",
+        "note": "assumption: deterministic evaluation interval; the best policy is kept"
+      },
+      {
+        "key": "opt.restarts",
+        "value": 16,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "opt.iters",
+        "value": 500,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "opt.lr",
+        "value": 0.02,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.test_samples",
+        "value": 256,
+        "source": "implementation",
+        "note": "instances per sweep point"
+      },
+      {
+        "key": "eval.fading_samples",
+        "value": 32,
+        "source": "implementation",
+        "note": "small-scale fading draws for position evaluation"
+      },
+      {
+        "key": "eval.grid_step_m",
+        "value": 2.0,
+        "source": "implementation",
+        "note": "exhaustive deployment search resolution"
+      },
+      {
+        "key": "eval.search_refine_top",
+        "value": 25,
+        "source": "implementation",
+        "note": "best grid points re-scored with 8x more fading draws"
+      },
+      {
+        "key": "eval.search_beamformer",
+        "value": "gnn",
+        "source": "implementation",
+        "note": "beamformer in the exhaustive deployment search: gnn (problem (23)-(25), W = GNN output, eq. (24)) | opt"
+      },
+      {
+        "key": "eval.search_opt_restarts",
+        "value": 4,
+        "source": "implementation",
+        "note": "OPT budget per grid point (smaller than the benchmark OPT: ~1e4 points)"
+      },
+      {
+        "key": "eval.search_opt_iters",
+        "value": 150,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.uav_position",
+        "value": "center",
+        "source": "implementation",
+        "note": "center | random  (UAV position in beamforming sweeps)"
+      },
+      {
+        "key": "eval.sweep_users",
+        "value": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.sweep_power_dbm",
+        "value": [
+          -20.0,
+          -10.0,
+          0.0,
+          10.0,
+          20.0,
+          30.0,
+          40.0
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.sweep_noise_w",
+        "value": [
+          3e-14,
+          6e-14,
+          1.2e-13,
+          2.4e-13,
+          4.8e-13,
+          9.6e-13
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.cdf_users",
+        "value": [
+          8,
+          12
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.timing_users",
+        "value": [
+          2,
+          4,
+          6,
+          8,
+          10
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.timing_runs",
+        "value": 400,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.transfer_users",
+        "value": 12,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.transfer_epochs",
+        "value": 100,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "eval.convergence_seeds",
+        "value": [
+          0,
+          1,
+          2
+        ],
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "seed",
+        "value": 0,
+        "source": "implementation",
+        "note": ""
+      },
+      {
+        "key": "device",
+        "value": "auto",
+        "source": "implementation",
+        "note": "auto | cpu | cuda | cuda:0 ..."
+      },
+      {
+        "key": "output_dir",
+        "value": "outputs/runs",
+        "source": "implementation",
+        "note": ""
+      }
+    ]
+  },
+  "tuning_knobs": [
+    {
+      "key": "system.path_loss_log",
+      "why": "Defines the shape of the deployment rate map; the single most influential unspecified choice.",
+      "tested": [
+        {
+          "value": "log10",
+          "outcome": "flat map, optimum 45-62 m from paper"
+        },
+        {
+          "value": "ln",
+          "outcome": "optimum 3-17 m from paper"
+        }
+      ]
+    },
+    {
+      "key": "system.distance_model",
+      "why": "Path-loss distance: 3-D vs horizontal.",
+      "tested": [
+        {
+          "value": "3d",
+          "outcome": "optimum 10 m (ln, x-axis) but rate only 2.7 bps/Hz and Fig. 8 profile error 0.35"
+        },
+        {
+          "value": "horizontal",
+          "outcome": "optimum 17 m, rate 30 bps/Hz, Fig. 8 profile error 0.15"
+        }
+      ]
+    },
+    {
+      "key": "system.array_axis",
+      "why": "Orientation of the ULA in the horizontal plane (the paper's Fig. 1 does not show it).",
+      "tested": [
+        {
+          "value": "x",
+          "outcome": "chosen"
+        },
+        {
+          "value": "y",
+          "outcome": "optimum 25 m (ln, horizontal)"
+        }
+      ]
+    },
+    {
+      "key": "system.noise_power_w",
+      "why": "Table I value; SNR level of the whole system.",
+      "tested": [
+        {
+          "value": "1.2e-13",
+          "outcome": "Table I, kept"
+        },
+        {
+          "value": "1.2e-10",
+          "outcome": "rejected: does not explain Fig. 7/8"
+        }
+      ]
+    },
+    {
+      "key": "gnn.hidden_dim",
+      "why": "Capacity of the GNN; decides how closely its rate map follows the true one.",
+      "tested": [
+        {
+          "value": 128,
+          "outcome": "under-fits (71-75% of OPT)"
+        },
+        {
+          "value": 256,
+          "outcome": "chosen (74-76% of OPT)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.batches_per_epoch",
+      "why": "Amount of fresh training data per epoch.",
+      "tested": [
+        {
+          "value": 20,
+          "outcome": "see hidden_dim"
+        },
+        {
+          "value": 50,
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "gnn.grad_clip",
+      "why": "Training stability at lr 0.005.",
+      "tested": [
+        {
+          "value": "none",
+          "outcome": "collapsed near epoch 125"
+        },
+        {
+          "value": 1.0,
+          "outcome": "stable, chosen"
+        }
+      ]
+    },
+    {
+      "key": "sac.reward_scale",
+      "why": "Critic conditioning (reward magnitude about 15-28).",
+      "tested": [
+        {
+          "value": 1.0,
+          "outcome": "SAC degraded after about 100 episodes"
+        },
+        {
+          "value": 0.1,
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "sac.obs_transform",
+      "why": "Channel features span decades.",
+      "tested": [
+        {
+          "value": "linear",
+          "outcome": "unstable SAC"
+        },
+        {
+          "value": "log",
+          "outcome": "chosen"
+        }
+      ]
+    },
+    {
+      "key": "sac.max_step_m / sac.episode_length",
+      "why": "Step size and horizon; decide how directly the UAV can fly to the optimum (the paper's trajectory is straighter than ours).",
+      "tested": [
+        {
+          "value": "5 m / 100 steps",
+          "outcome": "current; SAC stops 20 m from the optimum"
+        }
+      ],
+      "next_idea": "Try larger steps or longer episodes if a straighter trajectory is wanted."
+    },
+    {
+      "key": "eval.search_beamformer",
+      "why": "Which beamformer defines the 'optimal' deployment.",
+      "tested": [
+        {
+          "value": "opt",
+          "outcome": "reference only"
+        },
+        {
+          "value": "gnn",
+          "outcome": "chosen: constraint (24)"
+        }
+      ]
+    }
+  ]
+}
