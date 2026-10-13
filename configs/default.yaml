@@ -46,6 +46,7 @@ sac:
   net_arch: [256, 256]      # assumption
   max_step_m: 5.0           # assumption: action [-1,1]^2 scaled to metres
   topology_seed: 2025       # fixed user/eavesdropper layout for the run
+  layout_file: configs/layouts/paper_fig7.yaml  # fixed layout of Fig. 7; "" = random layout from topology_seed
 
 opt:                        # gradient multi-start proxy for the optimizer of [45]
   restarts: 16

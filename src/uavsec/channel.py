@@ -16,10 +16,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from pathlib import Path
 
 import torch
+import yaml
 
-from .config import SystemConfig
+from .config import REPO_ROOT, SystemConfig
 
 
 @dataclass
@@ -47,6 +49,27 @@ def sample_scenario(sys: SystemConfig, batch: int, gen: torch.Generator,
     offset = sys.eve_distance * torch.stack((bearing.cos(), bearing.sin()), dim=-1)
     eves = (users + offset).clamp(0.0, sys.area_size)
     return Scenario(users, eves)
+
+
+def load_layout(path: str | Path, sys: SystemConfig, device: torch.device) -> Scenario:
+    """Fixed single-instance layout from a YAML file with ``users`` and ``eves`` lists of [x, y].
+
+    ``eves[k]`` is the eavesdropper of ``users[k]``. Counts and bounds are validated
+    against the system config so a wrong file fails loudly.
+    """
+    path = Path(path)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    with open(path, encoding="utf-8") as fh:
+        data = yaml.safe_load(fh)
+    users = torch.tensor(data["users"], dtype=torch.float32, device=device)
+    eves = torch.tensor(data["eves"], dtype=torch.float32, device=device)
+    if users.shape != (sys.num_users, 2) or eves.shape != users.shape:
+        raise ValueError(f"{path}: expected {sys.num_users} users and as many eavesdroppers, "
+                         f"got {tuple(users.shape)} and {tuple(eves.shape)}")
+    if not (((users >= 0) & (users <= sys.area_size)).all() and ((eves >= 0) & (eves <= sys.area_size)).all()):
+        raise ValueError(f"{path}: all nodes must lie inside the {sys.area_size:g} m area")
+    return Scenario(users.unsqueeze(0), eves.unsqueeze(0))
 
 
 def sample_uav_positions(sys: SystemConfig, batch: int, gen: torch.Generator,

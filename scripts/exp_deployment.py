@@ -14,7 +14,7 @@ import torch
 
 from uavsec import plotting
 from uavsec.baselines.deployment import exhaustive_search, expected_rate, heuristic_positions
-from uavsec.channel import sample_scenario
+from uavsec.channel import load_layout, sample_scenario
 from uavsec.config import add_config_args, config_from_args
 from uavsec.envs.uav_env import UAVDeploymentEnv
 from uavsec.models import load_model
@@ -45,7 +45,8 @@ def main() -> None:
     run = Run("deployment", cfg)
     log = run.logger
     gnn = load_model(gnn_path, device)
-    scenario = sample_scenario(sys, 1, make_generator(cfg.sac.topology_seed, device), device)
+    scenario = (load_layout(cfg.sac.layout_file, sys, device) if cfg.sac.layout_file
+                else sample_scenario(sys, 1, make_generator(cfg.sac.topology_seed, device), device))
     users, eves = scenario.users[0].cpu().numpy(), scenario.eves[0].cpu().numpy()
     save_json({"users": users, "eves": eves, "gnn_checkpoint": str(gnn_path)}, run.path("scenario.json"))
 

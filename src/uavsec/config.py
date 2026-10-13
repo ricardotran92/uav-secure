@@ -64,6 +64,7 @@ class SACConfig:
     net_arch: list[int]
     max_step_m: float
     topology_seed: int
+    layout_file: str
 
 
 @dataclass
