@@ -16,6 +16,7 @@ system:
   noise_power_w: 1.2e-13    # sigma_0^2
   path_loss_a_db: 30.0      # LoS path loss 30 + 22 log10(d) dB  [44]
   path_loss_b: 22.0
+  path_loss_log: log10       # the paper writes "log(d)": log10 (standard) | ln
   eve_distance: 20.0        # eavesdropper "about 20 m" from its user
   antenna_spacing: 0.5      # assumption: half-wavelength ULA
   distance_model: 3d        # assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h

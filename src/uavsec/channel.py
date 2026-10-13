@@ -85,10 +85,16 @@ def area_center(sys: SystemConfig, batch: int, device: torch.device) -> torch.Te
     return torch.full((batch, 2), sys.area_size / 2, device=device)
 
 
+def path_loss_db(sys: SystemConfig, distance: torch.Tensor | float) -> torch.Tensor:
+    """PL(d) = a + b log(d) dB, with the logarithm base set by ``path_loss_log``."""
+    distance = torch.as_tensor(distance, dtype=torch.float32)
+    log = torch.log10 if sys.path_loss_log == "log10" else torch.log
+    return sys.path_loss_a_db + sys.path_loss_b * log(distance)
+
+
 def path_gain(sys: SystemConfig, distance: torch.Tensor) -> torch.Tensor:
     """Linear large-scale power gain 10^(-PL(d)/10)."""
-    pl_db = sys.path_loss_a_db + sys.path_loss_b * torch.log10(distance)
-    return 10.0 ** (-pl_db / 10.0)
+    return 10.0 ** (-path_loss_db(sys, distance) / 10.0)
 
 
 def steering_vector(direction_cos: torch.Tensor, num_antennas: int, spacing: float) -> torch.Tensor:
@@ -140,5 +146,5 @@ def reference_snr(sys: SystemConfig) -> float:
     Used as a fixed input scale for the neural networks so that their inputs are
     O(1) at the training setting while still reflecting changes of P or sigma^2.
     """
-    beta = 10.0 ** (-(sys.path_loss_a_db + sys.path_loss_b * math.log10(sys.uav_altitude)) / 10.0)
+    beta = float(path_gain(sys, torch.tensor(sys.uav_altitude)))
     return sys.power_max_w * beta / sys.noise_power_w

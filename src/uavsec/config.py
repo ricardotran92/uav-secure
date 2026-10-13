@@ -28,6 +28,7 @@ class SystemConfig:
     noise_power_w: float
     path_loss_a_db: float
     path_loss_b: float
+    path_loss_log: str
     eve_distance: float
     antenna_spacing: float
     distance_model: str
@@ -109,6 +110,8 @@ class Config:
     def __post_init__(self) -> None:
         if self.system.distance_model not in ("3d", "horizontal"):
             raise ValueError(f"system.distance_model must be '3d' or 'horizontal', got {self.system.distance_model!r}")
+        if self.system.path_loss_log not in ("log10", "ln"):
+            raise ValueError(f"system.path_loss_log must be 'log10' or 'ln', got {self.system.path_loss_log!r}")
         if self.system.array_axis not in ("x", "y"):
             raise ValueError(f"system.array_axis must be 'x' or 'y', got {self.system.array_axis!r}")
 
