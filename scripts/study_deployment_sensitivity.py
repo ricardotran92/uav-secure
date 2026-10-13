@@ -98,19 +98,25 @@ def main() -> None:
         pos = torch.as_tensor(np.stack(list(heur.values())), dtype=torch.float32, device=device)
         rates, _ = expected_rate(pos, scenario, beamformer, sys, 8 * args.fading, seed=cfg.seed + 7)
         profile = {s: float(r) / search["optimum_rate"] for s, r in zip(heur, rates.cpu())}
+        # With a flat rate surface the argmax is ill-defined, so also ask how good the
+        # paper's optimum is in our model, and how large the near-optimal (>= 95%) region is.
+        at_paper, _ = expected_rate(torch.as_tensor(paper_opt[None], dtype=torch.float32, device=device),
+                                    scenario, beamformer, sys, 8 * args.fading, seed=cfg.seed + 7)
         row = {
             "variant": label(changes), **{k: v for sec in changes.values() for k, v in sec.items()},
             "opt_x": search["optimum"][0], "opt_y": search["optimum"][1],
             "distance_to_paper_opt_m": float(np.linalg.norm(search["optimum"] - paper_opt)),
             "optimum_rate": search["optimum_rate"],
+            "paper_opt_relative_rate": float(at_paper) / search["optimum_rate"],
+            "near_optimal_area_pct": float(100 * (search["rate"] >= 0.95 * search["rate"].max()).mean()),
             "fig8_profile_error": float(np.mean([abs(profile[s] - paper_profile[s]) for s in paper_profile])),
             **{f"ratio[{s}]": v for s, v in profile.items()},
         }
         rows.append(row)
         maps.append((row, search, scenario))
-        log.info("%-70s optimum (%5.1f, %5.1f) dist %5.1f m | rate %6.2f | Fig.8 profile error %.3f",
-                 row["variant"], *search["optimum"], row["distance_to_paper_opt_m"], row["optimum_rate"],
-                 row["fig8_profile_error"])
+        log.info("%-70s optimum (%5.1f, %5.1f) dist %5.1f m | rate %6.2f | paper-opt %.0f%% of max | "
+                 "Fig.8 profile error %.3f", row["variant"], *search["optimum"], row["distance_to_paper_opt_m"],
+                 row["optimum_rate"], 100 * row["paper_opt_relative_rate"], row["fig8_profile_error"])
 
     table = pd.DataFrame(rows).sort_values(["distance_to_paper_opt_m", "fig8_profile_error"])
     table.to_csv(run.path("sensitivity.csv"), index=False)
