@@ -1,0 +1,16 @@
+# Calibrated channel interpretation (merge on top of default.yaml).
+#
+# Table I is kept exactly as published (30 + 22 log(d) dB, 1 W, 1.2e-13 W, ...). Only two
+# modelling choices the paper leaves unspecified are interpreted differently:
+#   * "log(d)" is the natural logarithm (as e.g. numpy's np.log), not log10;
+#   * the path-loss distance d is the horizontal UAV-node distance.
+# This is the interpretation that best reproduces three independent results of the paper
+# at once: the optimum of Fig. 7, the heuristic-vs-optimum profile of Fig. 8, and the
+# secrecy-rate level of Figs. 6/8. See scripts/study_deployment_sensitivity.py.
+#   python scripts/exp_convergence.py --config configs/default.yaml configs/calibrated.yaml
+output_dir: outputs/runs_calibrated
+
+system:
+  path_loss_log: ln
+  distance_model: horizontal
+  array_axis: x
