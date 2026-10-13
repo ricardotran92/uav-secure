@@ -201,6 +201,12 @@
         "note": "assumption: gradient-norm clipping (training diverged without it)"
       },
       {
+        "key": "gnn.lr_schedule",
+        "value": "constant",
+        "source": "assumption",
+        "note": "assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)"
+      },
+      {
         "key": "mlp.hidden_dims",
         "value": [
           512,
@@ -318,6 +324,18 @@
         "value": 10,
         "source": "assumption",
         "note": "assumption: deterministic evaluation interval; the best policy is kept"
+      },
+      {
+        "key": "sac.gradient_steps",
+        "value": 1,
+        "source": "assumption",
+        "note": "assumption: SAC gradient updates per environment step"
+      },
+      {
+        "key": "sac.eval_episodes",
+        "value": 1,
+        "source": "assumption",
+        "note": "assumption: deterministic episodes averaged per evaluation"
       },
       {
         "key": "opt.restarts",
@@ -674,6 +692,12 @@
         "note": "assumption: gradient-norm clipping (training diverged without it)"
       },
       {
+        "key": "gnn.lr_schedule",
+        "value": "constant",
+        "source": "assumption",
+        "note": "assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)"
+      },
+      {
         "key": "mlp.hidden_dims",
         "value": [
           512,
@@ -791,6 +815,18 @@
         "value": 10,
         "source": "assumption",
         "note": "assumption: deterministic evaluation interval; the best policy is kept"
+      },
+      {
+        "key": "sac.gradient_steps",
+        "value": 1,
+        "source": "assumption",
+        "note": "assumption: SAC gradient updates per environment step"
+      },
+      {
+        "key": "sac.eval_episodes",
+        "value": 1,
+        "source": "assumption",
+        "note": "assumption: deterministic episodes averaged per evaluation"
       },
       {
         "key": "opt.restarts",

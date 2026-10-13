@@ -33,6 +33,7 @@ gnn:
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
   lr_schedule: constant     # assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)
+  input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption

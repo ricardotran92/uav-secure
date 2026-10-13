@@ -47,6 +47,7 @@ class GNNConfig:
     clamp_loss: bool
     grad_clip: float
     lr_schedule: str
+    input_transform: str
 
 
 @dataclass

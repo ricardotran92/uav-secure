@@ -33,6 +33,7 @@ Updated 2026-10-13.
 - 🟡 `gnn.batches_per_epoch` = **`50`** - assumption: fresh mini-batches per epoch
 - 🟡 `gnn.val_samples` = **`2048`** - assumption: fixed validation set
 - 🟡 `gnn.grad_clip` = **`1`** - assumption: gradient-norm clipping (training diverged without it)
+- 🟡 `gnn.lr_schedule` = **`constant`** - assumption: constant | cosine (starts at lr, decays to 1% of lr at the last epoch)
 - 🟡 `mlp.hidden_dims` = **`[512, 512, 512]`** - assumption
 - 🟡 `mlp.lr` = **`0.001`** - assumption (0.005 diverges for the wider MLP)
 - 🟡 `sac.episode_length` = **`100`** - assumption: steps per episode
@@ -43,6 +44,8 @@ Updated 2026-10-13.
 - 🟡 `sac.obs_transform` = **`log`** - assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)
 - 🟡 `sac.reward_scale` = **`0.1`** - assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec
 - 🟡 `sac.eval_every_episodes` = **`10`** - assumption: deterministic evaluation interval; the best policy is kept
+- 🟡 `sac.gradient_steps` = **`1`** - assumption: SAC gradient updates per environment step
+- 🟡 `sac.eval_episodes` = **`1`** - assumption: deterministic episodes averaged per evaluation
 
 **Main-profile results:**
 
