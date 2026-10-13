@@ -83,6 +83,9 @@ class EvalConfig:
     fading_samples: int
     grid_step_m: float
     search_refine_top: int
+    search_beamformer: str
+    search_opt_restarts: int
+    search_opt_iters: int
     uav_position: str
     sweep_users: list[int]
     sweep_power_dbm: list[float]
@@ -216,7 +219,7 @@ DEFAULT_CONFIG = REPO_ROOT / "configs" / "default.yaml"
 def add_config_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", nargs="+", default=[str(DEFAULT_CONFIG)],
                         help="YAML files merged left to right (default: configs/default.yaml)")
-    parser.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE",
+    parser.add_argument("--set", nargs="*", default=[], action="extend", metavar="KEY=VALUE",
                         help="overrides, e.g. --set system.num_users=12 gnn.epochs=50")
     parser.add_argument("--quick", action="store_true",
                         help="merge configs/quick.yaml for a fast smoke test")

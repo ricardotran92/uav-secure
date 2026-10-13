@@ -61,6 +61,9 @@ eval:
   fading_samples: 32        # small-scale fading draws for position evaluation
   grid_step_m: 2.0          # exhaustive deployment search resolution
   search_refine_top: 25     # best grid points re-scored with 8x more fading draws
+  search_beamformer: opt    # beamformer inside the exhaustive deployment search: opt (joint optimum of (7)-(9)) | gnn
+  search_opt_restarts: 4    # OPT budget per grid point (smaller than the benchmark OPT: ~1e4 points)
+  search_opt_iters: 150
   uav_position: center      # center | random  (UAV position in beamforming sweeps)
   sweep_users: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
   sweep_power_dbm: [-20, -10, 0, 10, 20, 30, 40]

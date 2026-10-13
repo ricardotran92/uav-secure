@@ -21,6 +21,8 @@ eval:
   test_samples: 16
   fading_samples: 4
   grid_step_m: 20.0
+  search_opt_restarts: 2
+  search_opt_iters: 5
   sweep_users: [2, 4]
   sweep_power_dbm: [0, 30]
   sweep_noise_w: [1.2e-13, 4.8e-13]

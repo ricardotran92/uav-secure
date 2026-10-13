@@ -19,5 +19,7 @@ python -m pytest -q
 python scripts/exp_convergence.py "$@"     # Phase 2: Fig. 4-5
 python scripts/exp_beamforming.py "$@"     # Phase 3: Fig. 9-11
 python scripts/exp_deployment.py "$@"      # Phase 4: Fig. 6-8
+python scripts/study_deployment_sensitivity.py "$@" --set opt.restarts=4 opt.iters=150 \
+    --vary system.path_loss_log=log10,ln system.distance_model=3d,horizontal system.array_axis=x,y  # channel-model study
 python scripts/make_report.py "$@"         # Phase 5: report + figures
 python scripts/make_animation.py "$@"      # Phase 5: trajectory animation

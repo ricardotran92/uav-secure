@@ -104,7 +104,8 @@ def draw_nodes(ax: plt.Axes, users: np.ndarray, eves: np.ndarray) -> None:
 
 
 def fig7_trajectory(users: np.ndarray, eves: np.ndarray, traj: np.ndarray, optimum: np.ndarray,
-                    area: float, heatmap: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None) -> plt.Figure:
+                    area: float, heatmap: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
+                    paper_optimum: np.ndarray | None = None) -> plt.Figure:
     """Fig. 7: learned UAV trajectory vs the exhaustive-search optimum (optional rate heatmap)."""
     fig, ax = plt.subplots(figsize=(5.6, 5.0))
     if heatmap is not None:
@@ -116,6 +117,9 @@ def fig7_trajectory(users: np.ndarray, eves: np.ndarray, traj: np.ndarray, optim
     ax.scatter(*traj[0], marker="^", s=80, color=PALETTE[6], label="Start", zorder=4)
     ax.scatter(*traj[-1], marker="s", s=70, color=PALETTE[0], label="End", zorder=4)
     ax.scatter(*optimum, marker="*", s=180, color=PALETTE[1], edgecolor="white", label="Optimum (search)", zorder=5)
+    if paper_optimum is not None:
+        ax.scatter(*paper_optimum, marker="X", s=110, color=PALETTE[7], edgecolor="white",
+                   label="Paper optimum (Fig. 7)", zorder=5)
     ax.set(xlim=(0, area), ylim=(0, area), xlabel="x (m)", ylabel="y (m)", aspect="equal",
            title="UAV deployment learned by SAC")
     ax.grid(False)

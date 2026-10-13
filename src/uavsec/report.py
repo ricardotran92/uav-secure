@@ -17,7 +17,7 @@ from .config import Config
 from .evaluation.beamforming import PAPER_METHODS
 from .utils import latest_run, load_json, save_json
 
-EXPERIMENTS = ("convergence", "beamforming", "deployment")
+EXPERIMENTS = ("convergence", "beamforming", "deployment", "deployment_sensitivity")
 
 # Table I of the paper vs. this implementation (keys into Config).
 TABLE_I = [
@@ -27,6 +27,9 @@ TABLE_I = [
     ("UAV altitude", "100 m", lambda c: f"{c.system.uav_altitude:g} m"),
     ("Rician factor", "10 dB", lambda c: f"{c.system.rician_factor_db:g} dB"),
     ("Power budget", "1 W", lambda c: f"{c.system.power_max_w:g} W"),
+    ("Path loss (LoS)", "30 + 22 log(d) dB",
+     lambda c: f"{c.system.path_loss_a_db:g} + {c.system.path_loss_b:g} {c.system.path_loss_log}(d) dB, "
+               f"d = {'3-D' if c.system.distance_model == '3d' else 'horizontal'} distance"),
     ("Noise power", "1.2e-13 W", lambda c: f"{c.system.noise_power_w:.2g} W"),
     ("GNN layers / LR / epochs / batch", "5 / 0.005 / 300 / 512",
      lambda c: f"{c.gnn.num_layers} / {c.gnn.lr:g} / {c.gnn.epochs} / {c.gnn.batch_size}"),
@@ -35,7 +38,7 @@ TABLE_I = [
 ]
 
 ASSUMPTIONS = [
-    "UAV array: half-wavelength ULA; LoS component = array steering vector; path loss uses the 3-D distance.",
+    "UAV array: half-wavelength ULA along the {axis}-axis; LoS component = array steering vector.",
     "Eavesdropper k is placed exactly `eve_distance` from user k at a uniformly random bearing (clipped to the area).",
     "GNN: weights shared by all nodes, hidden width {hidden}, max aggregation, PReLU, e_k^(0) = 0; "
     "inputs are channels scaled by sqrt(P / SNR_ref) for numerical conditioning.",
@@ -85,7 +88,7 @@ class ReportBuilder:
         c = self.cfg
         table = pd.DataFrame([(n, paper, ours(c)) for n, paper, ours in TABLE_I],
                              columns=["Parameter", "Paper (Table I)", "This run"])
-        assumptions = [a.format(hidden=c.gnn.hidden_dim, batches=c.gnn.batches_per_epoch, mlp=c.mlp.hidden_dims,
+        assumptions = [a.format(axis=c.system.array_axis, hidden=c.gnn.hidden_dim, batches=c.gnn.batches_per_epoch, mlp=c.mlp.hidden_dims,
                                 mlp_lr=c.mlp.lr, clip=c.gnn.grad_clip, restarts=c.opt.restarts, iters=c.opt.iters,
                                 T=c.sac.episode_length, step=c.sac.max_step_m, arch=c.sac.net_arch,
                                 topo=c.sac.topology_seed) for a in ASSUMPTIONS]
@@ -160,24 +163,51 @@ class ReportBuilder:
             ("Graph-DRL rate / optimum rate", f"{m['graph_drl_vs_optimum_pct']:.1f} %"),
             ("Gain over best heuristic", f"{m['graph_drl_gain_over_best_heuristic_pct']:+.1f} %"),
             ("SAC convergence episode (MA reaches 95% of final)", m["sac_convergence_episode"]),
-        ], columns=["Metric", "Value"])
+            ("Optimum found with", f"{m['search_beamformer'].upper()} beamforming"),
+            ("Optimum for GNN beamforming (m)", "({:.1f}, {:.1f})".format(*m["gnn_surface_optimum_position"])),
+        ] + ([
+            ("Paper optimum, Fig. 7 (m)", "({:.1f}, {:.1f})".format(*m["paper_optimum_position"])),
+            ("Our optimum - paper optimum (m)", f"{m['optimum_distance_to_paper_m']:.1f}"),
+            ("SAC final position - paper optimum (m)", f"{m['sac_final_distance_to_paper_optimum_m']:.1f}"),
+        ] if "paper_optimum_position" in m else []), columns=["Metric", "Value"])
+        paper_opt = np.asarray(m["paper_optimum_position"]) if "paper_optimum_position" in m else None
         self.sections.append(
             "## 4. SAC-based UAV deployment (Fig. 6, Fig. 7, Fig. 8)\n\n" +
             self.figure(plotting.fig6_sac(episodes), "fig6_sac", "Fig. 6 - SAC training convergence") + "\n\n" +
             self.figure(plotting.fig7_trajectory(users, eves, traj[["x", "y"]].to_numpy(), np.asarray(m["optimum_position"]),
-                                                 area, (rate_map["grid_x"], rate_map["grid_y"], rate_map["rate"])),
+                                                 area, (rate_map["grid_x"], rate_map["grid_y"], rate_map["rate"]),
+                                                 paper_optimum=paper_opt),
                         "fig7_trajectory", "Fig. 7 - learned trajectory over the expected-secrecy-rate map") + "\n\n" +
             md_table(headline) + "\n\n" +
             self.figure(plotting.fig8_deployment(dep, users, eves, area), "fig8_deployment",
                         "Fig. 8 - expected sum secrecy rate per deployment strategy") + "\n\n" +
             md_table(dep.rename(columns={"rate": "rate (bps/Hz)"}), ".2f"))
 
+    def sensitivity(self) -> None:
+        run, m = self.runs["deployment_sensitivity"], self.metrics["deployment_sensitivity"]
+        table = pd.read_csv(run / "sensitivity.csv")
+        table["paper opt, % of max"] = 100 * table["paper_opt_relative_rate"]
+        table = table[["variant", "opt_x", "opt_y", "distance_to_paper_opt_m", "optimum_rate",
+                       "paper opt, % of max", "fig8_profile_error", "ratio[Area center]"]].rename(columns={
+            "opt_x": "opt x", "opt_y": "opt y", "distance_to_paper_opt_m": "to paper opt (m)",
+            "optimum_rate": "rate at opt", "fig8_profile_error": "Fig. 8 profile error",
+            "ratio[Area center]": "area center / opt"})
+        shutil.copyfile(run / "figs" / "sensitivity_maps.png", self.figs / "sensitivity_maps.png")
+        profile = ", ".join(f"{k} {v:.2f}" for k, v in m["paper_fig8_profile"].items())
+        intro = (f"Beamformer: {m['beamformer'].upper()}. Paper optimum: "
+                 f"({m['paper_optimum'][0]:.0f}, {m['paper_optimum'][1]:.0f}); paper Fig. 8 heuristic/optimum "
+                 f"ratios: {profile}. The Fig. 8 profile error is the mean absolute difference of these ratios.")
+        self.sections.append(
+            "## 5. Which channel interpretation reproduces the paper? (sensitivity study)\n\n" + intro + "\n\n" +
+            md_table(table, ".2f") + "\n\n![Rate maps per interpretation](figs/sensitivity_maps.png)\n\n"
+            "*Relative expected secrecy-rate maps; star = our optimum, X = paper optimum.*")
+
     def provenance(self) -> None:
         rows = [(name, self.runs[name].name if self.runs[name] else "missing",
                  self.metrics.get(name, {}).get("git", "-"),
                  f"{self.metrics[name]['wall_time_s'] / 60:.1f}" if name in self.metrics else "-")
                 for name in EXPERIMENTS]
-        self.sections.append("## 5. Provenance\n\n" + md_table(pd.DataFrame(
+        self.sections.append("## 6. Provenance\n\n" + md_table(pd.DataFrame(
             rows, columns=["Experiment", "Run directory", "Git commit", "Wall time (min)"])) +
             "\n\nRegenerate: `python scripts/make_report.py` (figures are rebuilt from the CSV files above).")
 
@@ -187,7 +217,7 @@ class ReportBuilder:
         self.figs.mkdir(parents=True)
         self.setup()
         for name, section in (("convergence", self.convergence), ("beamforming", self.beamforming),
-                              ("deployment", self.deployment)):
+                              ("deployment", self.deployment), ("deployment_sensitivity", self.sensitivity)):
             if name in self.metrics:
                 section()
             else:

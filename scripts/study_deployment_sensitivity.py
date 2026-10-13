@@ -26,7 +26,7 @@ import yaml
 
 from uavsec import plotting
 from uavsec.baselines.deployment import exhaustive_search, expected_rate, heuristic_positions
-from uavsec.baselines.opt_beamforming import mrt, optimize_beamforming, zero_forcing
+from uavsec.baselines.opt_beamforming import mrt, opt_beamformer, zero_forcing
 from uavsec.channel import load_layout
 from uavsec.config import REPO_ROOT, Config, add_config_args, config_from_args
 from uavsec.models import load_model
@@ -51,8 +51,7 @@ def parse_vary(specs: list[str]) -> list[dict[str, dict[str, object]]]:
 
 def make_beamformer(name: str, cfg: Config, device: torch.device):
     if name == "opt":
-        gen = make_generator(cfg.seed, device)
-        return lambda h, h_e, p: optimize_beamforming(h, h_e, p, cfg.opt, gen)[0]
+        return opt_beamformer(cfg.opt, make_generator(cfg.seed, device))
     if name == "mrt":
         return lambda h, h_e, p: mrt(h, p)
     if name == "zf":

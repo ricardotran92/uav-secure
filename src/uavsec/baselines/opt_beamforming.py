@@ -63,3 +63,8 @@ def optimize_beamforming(h: torch.Tensor, h_e: torch.Tensor, power: float, cfg: 
     best_rate, idx = best_rate.reshape(b, r).max(dim=1)
     best_w = best_w.reshape(b, r, k, n)[torch.arange(b, device=h.device), idx]
     return best_w.detach(), best_rate.detach()
+
+
+def opt_beamformer(cfg: OptConfig, gen: torch.Generator):
+    """(h, h_E, P) -> W using the OPT solver; same call signature as a trained network."""
+    return lambda h, h_e, power: optimize_beamforming(h, h_e, power, cfg, gen)[0]

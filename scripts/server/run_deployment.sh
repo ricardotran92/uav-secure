@@ -12,5 +12,7 @@ export CUDA_VISIBLE_DEVICES="${GPU:-2}"
 python -c "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 'CUDA is not available - check torch/driver')"
 
 python scripts/exp_deployment.py "$@"
+python scripts/study_deployment_sensitivity.py "$@" --set opt.restarts=4 opt.iters=150 \
+    --vary system.path_loss_log=log10,ln system.distance_model=3d,horizontal system.array_axis=x,y
 python scripts/make_report.py "$@"
 python scripts/make_animation.py "$@"

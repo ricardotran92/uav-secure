@@ -55,15 +55,24 @@ def sample_scenario(sys: SystemConfig, batch: int, gen: torch.Generator,
     return Scenario(users, eves)
 
 
+def _layout_path(path: str | Path) -> Path:
+    path = Path(path)
+    return path if path.is_absolute() else REPO_ROOT / path
+
+
+def load_paper_reference(path: str | Path) -> dict | None:
+    """Optional ``paper_reference`` block of a layout file (digitised results to compare against)."""
+    with open(_layout_path(path), encoding="utf-8") as fh:
+        return yaml.safe_load(fh).get("paper_reference")
+
+
 def load_layout(path: str | Path, sys: SystemConfig, device: torch.device) -> Scenario:
     """Fixed single-instance layout from a YAML file with ``users`` and ``eves`` lists of [x, y].
 
     ``eves[k]`` is the eavesdropper of ``users[k]``. Counts and bounds are validated
     against the system config so a wrong file fails loudly.
     """
-    path = Path(path)
-    if not path.is_absolute():
-        path = REPO_ROOT / path
+    path = _layout_path(path)
     with open(path, encoding="utf-8") as fh:
         data = yaml.safe_load(fh)
     users = torch.tensor(data["users"], dtype=torch.float32, device=device)

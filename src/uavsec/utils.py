@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import random
+import re
 import subprocess
 import sys
 import time
@@ -129,7 +130,10 @@ def _make_logger(name: str, file: Path) -> logging.Logger:
 
 def latest_run(output_dir: str | Path, name: str) -> Path | None:
     """Most recent run directory of an experiment that finished (has metrics.json)."""
-    runs = sorted(p for p in Path(output_dir).glob(f"{name}_*") if (p / "metrics.json").exists())
+    # Match "<name>_<YYYYmmdd-HHMMSS>" exactly, so "deployment" does not pick up "deployment_sensitivity_*".
+    pattern = re.compile(rf"{re.escape(name)}_\d{{8}}-\d{{6}}")
+    runs = sorted(p for p in Path(output_dir).glob(f"{name}_*")
+                  if pattern.fullmatch(p.name) and (p / "metrics.json").exists())
     return runs[-1] if runs else None
 
 
