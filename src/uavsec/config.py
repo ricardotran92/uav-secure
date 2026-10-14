@@ -30,6 +30,7 @@ class SystemConfig:
     path_loss_b: float
     path_loss_log: str
     eve_distance: float
+    eve_distance_spread: float
     antenna_spacing: float
     distance_model: str
     min_distance_m: float
@@ -49,8 +50,11 @@ class GNNConfig:
     grad_clip: float
     lr_schedule: str
     input_transform: str
-    uav_near_user_frac: float
-    uav_near_user_std_m: float
+    uav_sampling: str
+    uav_sampling_frac: float
+    uav_sampling_std_m: float
+    out_layers: int
+    init_embedding: str
 
 
 @dataclass

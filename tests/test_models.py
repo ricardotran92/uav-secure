@@ -66,3 +66,18 @@ def test_checkpoint_roundtrip(cfg, tmp_path):
     loaded = load_model(tmp_path / "m.pt")
     h, h_e = batch(cfg, k=3)
     assert torch.allclose(model.eval()(h, h_e, 1.0), loaded(h, h_e, 1.0))
+
+
+@pytest.mark.parametrize("out_layers,init", [(3, "zeros"), (2, "mrt")])
+def test_gnn_variants_stay_permutation_equivariant(cfg, out_layers, init):
+    torch.manual_seed(0)
+    model = SecureBeamGNN(cfg.system.num_antennas, reference_snr(cfg.system), hidden_dim=16, num_layers=2,
+                          out_layers=out_layers, init_embedding=init)
+    h, h_e = batch(cfg, k=5)
+    perm = torch.randperm(5)
+    assert torch.allclose(model(h, h_e, 1.0)[:, perm], model(h[:, perm], h_e[:, perm], 1.0), atol=1e-5)
+
+
+def test_scorecard_relative_error():
+    from uavsec.scorecard import relative_error
+    assert relative_error([10.0, 0.5], [10.0, 0.0]) == pytest.approx(0.25)   # floor of 1 for tiny paper values

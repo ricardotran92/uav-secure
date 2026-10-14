@@ -46,11 +46,14 @@ class Scenario:
 
 def sample_scenario(sys: SystemConfig, batch: int, gen: torch.Generator,
                     device: torch.device, num_users: int | None = None) -> Scenario:
-    """Users uniform in the area; each eavesdropper ~eve_distance away at a random bearing."""
+    """Users uniform in the area; each eavesdropper at a random bearing, at a distance drawn
+    uniformly from eve_distance +- eve_distance_spread ("about 20 m" in the paper)."""
     k = num_users or sys.num_users
     users = torch.rand(batch, k, 2, generator=gen, device=device) * sys.area_size
     bearing = torch.rand(batch, k, generator=gen, device=device) * 2 * math.pi
-    offset = sys.eve_distance * torch.stack((bearing.cos(), bearing.sin()), dim=-1)
+    spread = (2 * torch.rand(batch, k, generator=gen, device=device) - 1) * sys.eve_distance_spread
+    radius = (sys.eve_distance + spread).unsqueeze(-1)
+    offset = radius * torch.stack((bearing.cos(), bearing.sin()), dim=-1)
     eves = (users + offset).clamp(0.0, sys.area_size)
     return Scenario(users, eves)
 
@@ -60,10 +63,17 @@ def _layout_path(path: str | Path) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
 
 
-def load_paper_reference(path: str | Path) -> dict | None:
-    """Optional ``paper_reference`` block of a layout file (digitised results to compare against)."""
-    with open(_layout_path(path), encoding="utf-8") as fh:
-        return yaml.safe_load(fh).get("paper_reference")
+PAPER_REFERENCE = REPO_ROOT / "configs" / "paper_reference.yaml"
+
+
+def load_paper_reference() -> dict:
+    """Digitised results of the paper (configs/paper_reference.yaml), for comparison only.
+
+    Adds the shortcuts ``optimum`` (Fig. 7) and ``fig8_rates`` (Fig. 8).
+    """
+    with open(PAPER_REFERENCE, encoding="utf-8") as fh:
+        ref = yaml.safe_load(fh)
+    return {**ref, "optimum": ref["fig7"]["optimum"], "fig8_rates": ref["fig8"]}
 
 
 def load_layout(path: str | Path, sys: SystemConfig, device: torch.device) -> Scenario:

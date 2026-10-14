@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from uavsec.baselines.deployment import heuristic_positions, min_enclosing_circle_center, polygon_centroid
-from uavsec.channel import reference_snr, sample_scenario
+from uavsec.channel import load_layout, reference_snr, sample_scenario
 from uavsec.config import DEFAULT_CONFIG, load_config
 from uavsec.envs.uav_env import UAVDeploymentEnv
 from uavsec.models import SecureBeamGNN
@@ -53,3 +53,22 @@ def test_env_seeded_reset_is_reproducible(env):
     obs1, _ = env.reset(seed=3)
     obs2, _ = env.reset(seed=3)
     assert np.allclose(obs1, obs2)
+
+
+def test_swapped_layout_differs_only_in_eves_5_and_6():
+    cfg = load_config([DEFAULT_CONFIG])
+    base = load_layout("configs/layouts/paper_fig7.yaml", cfg.system, DEVICE)
+    swapped = load_layout("configs/layouts/paper_fig7_swapped.yaml", cfg.system, DEVICE)
+    assert torch.equal(base.users, swapped.users)
+    same = [k for k in range(8) if k not in (5, 6)]
+    assert torch.equal(base.eves[0, same], swapped.eves[0, same])
+    assert torch.equal(base.eves[0, [5, 6]], swapped.eves[0, [6, 5]])
+
+
+def test_eavesdropper_distance_spread():
+    cfg = load_config([DEFAULT_CONFIG], ["system.eve_distance_spread=5.0", "system.area_size=10000"])
+    scen = sample_scenario(cfg.system, 2000, make_generator(0, DEVICE), DEVICE)
+    inside = ((scen.users > 25) & (scen.users < cfg.system.area_size - 25)).all(-1)   # not clipped at the border
+    dist = (scen.users - scen.eves).norm(dim=-1)[inside]
+    assert dist.min() >= 15.0 - 1e-3 and dist.max() <= 25.0 + 1e-3
+    assert dist.std() > 2.0                                   # actually spread, not fixed

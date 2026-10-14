@@ -76,7 +76,7 @@ def main() -> None:
              *searches["gnn"]["optimum"], *searches["opt"]["optimum"], ev.search_beamformer)
     np.savez_compressed(run.path("rate_map.npz"), **{k: v for k, v in search.items() if isinstance(v, np.ndarray)})
     final = traj[["x", "y"]].to_numpy()[-1]
-    reference = load_paper_reference(cfg.sac.layout_file) if cfg.sac.layout_file else None
+    reference = load_paper_reference() if cfg.sac.layout_file else None   # paper values apply to the Fig. 7 layout
     paper_opt = np.asarray(reference["optimum"]) if reference else None
     plotting.save(plotting.fig7_trajectory(users, eves, traj[["x", "y"]].to_numpy(), search["optimum"], sys.area_size,
                                            (search["grid_x"], search["grid_y"], search["rate"]), paper_optimum=paper_opt),

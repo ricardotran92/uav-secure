@@ -15,6 +15,7 @@ import pandas as pd
 from . import plotting
 from .config import Config
 from .evaluation.beamforming import PAPER_METHODS
+from .scorecard import paper_scorecard
 from .utils import latest_run, load_json, save_json
 
 EXPERIMENTS = ("convergence", "beamforming", "deployment", "deployment_sensitivity")
@@ -211,6 +212,17 @@ class ReportBuilder:
             md_table(table, ".2f") + "\n\n![Rate maps per interpretation](figs/sensitivity_maps.png)\n\n"
             "*Relative expected secrecy-rate maps; star = our optimum, X = paper optimum.*")
 
+    def scorecard(self) -> None:
+        card = paper_scorecard(self.cfg.output_path)
+        save_json(card, self.out / "scorecard.json")
+        rows = [(fig, card["weights"][fig], err) for fig, err in sorted(card["errors"].items())]
+        rows.append(("**total (weighted)**", "", card["total_error"]))
+        self.sections.append(
+            "## Paper-match scorecard\n\nError per figure against the digitised paper values "
+            "(`configs/paper_reference.yaml`); 0 = perfect match. Rate curves: mean relative error; Fig. 7: distance "
+            "/ 50 m; Fig. 8: mean error of the heuristic / Graph-DRL ratios. MLP curves are not scored.\n\n"
+            + md_table(pd.DataFrame(rows, columns=["Figure", "Weight", "Error"]), ".3f"))
+
     def provenance(self) -> None:
         rows = [(name, self.runs[name].name if self.runs[name] else "missing",
                  self.metrics.get(name, {}).get("git", "-"),
@@ -225,6 +237,7 @@ class ReportBuilder:
             shutil.rmtree(self.figs)
         self.figs.mkdir(parents=True)
         self.setup()
+        self.scorecard()
         for name, section in (("convergence", self.convergence), ("beamforming", self.beamforming),
                               ("deployment", self.deployment), ("deployment_sensitivity", self.sensitivity)):
             if name in self.metrics:

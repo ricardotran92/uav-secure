@@ -38,7 +38,7 @@ def main() -> None:
     log = run.logger
 
     scenario = load_layout(cfg.sac.layout_file, sys, device)
-    paper_opt = np.asarray(load_paper_reference(cfg.sac.layout_file)["optimum"])
+    paper_opt = np.asarray(load_paper_reference()["optimum"])
     paper_pos = torch.as_tensor(paper_opt[None], dtype=torch.float32, device=device)
 
     rows = []

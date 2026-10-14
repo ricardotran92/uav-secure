@@ -18,6 +18,7 @@ system:
   path_loss_b: 22.0
   path_loss_log: log10       # the paper writes "log(d)": log10 (standard) | ln
   eve_distance: 20.0        # eavesdropper "about 20 m" from its user
+  eve_distance_spread: 0.0  # assumption: distance drawn uniformly from eve_distance +- spread (training/test layouts)
   antenna_spacing: 0.5      # assumption: half-wavelength ULA
   distance_model: 3d        # assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h
   min_distance_m: 1.0       # assumption: path-loss distance is clamped below at this value
@@ -35,8 +36,11 @@ gnn:
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
   lr_schedule: cosine       # assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
-  uav_near_user_frac: 0.0   # assumption: share of training samples with the UAV around a random user (rest uniform)
-  uav_near_user_std_m: 30.0 # assumption: spread (m) of those UAV positions around the user
+  uav_sampling: uniform     # assumption: training UAV positions: uniform | center | near_user
+  uav_sampling_frac: 0.5    # assumption: share drawn around the anchor (ignored for uniform)
+  uav_sampling_std_m: 30.0  # assumption: spread (m) around the anchor
+  out_layers: 2             # assumption: depth of the f_out MLP in each GCN layer (eq. (18))
+  init_embedding: zeros     # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption

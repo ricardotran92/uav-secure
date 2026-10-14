@@ -39,14 +39,15 @@ def max_over_others(x: torch.Tensor) -> torch.Tensor:
 
 
 class GCNLayer(nn.Module):
-    def __init__(self, in_dim: int, hidden_dim: int, out_dim: int) -> None:
+    def __init__(self, in_dim: int, hidden_dim: int, out_dim: int, out_layers: int = 2) -> None:
         super().__init__()
         self.f_gen = nn.Sequential(nn.Linear(in_dim, hidden_dim), FeaturePReLU(hidden_dim))
         self.f_aggr = nn.Sequential(nn.Linear(hidden_dim, hidden_dim), FeaturePReLU(hidden_dim))
-        self.f_out = nn.Sequential(
-            nn.Linear(2 * hidden_dim, hidden_dim), FeaturePReLU(hidden_dim),
-            nn.Linear(hidden_dim, out_dim),
-        )
+        # f_out is "a multilayer perceptron" (eq. (18)); its depth is not given in the paper.
+        blocks: list[nn.Module] = [nn.Linear(2 * hidden_dim, hidden_dim), FeaturePReLU(hidden_dim)]
+        for _ in range(out_layers - 2):
+            blocks += [nn.Linear(hidden_dim, hidden_dim), FeaturePReLU(hidden_dim)]
+        self.f_out = nn.Sequential(*blocks, nn.Linear(hidden_dim, out_dim))
 
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         m = self.f_gen(z)
@@ -58,17 +59,28 @@ class SecureBeamGNN(Beamformer):
     KIND = "gnn"
 
     def __init__(self, num_antennas: int, ref_snr: float, hidden_dim: int, num_layers: int,
-                 input_transform: str = "linear") -> None:
-        super().__init__(num_antennas, ref_snr, input_transform, hidden_dim=hidden_dim, num_layers=num_layers)
+                 input_transform: str = "linear", out_layers: int = 2, init_embedding: str = "zeros") -> None:
+        if init_embedding not in ("zeros", "mrt"):
+            raise ValueError(f"init_embedding must be 'zeros' or 'mrt', got {init_embedding!r}")
+        super().__init__(num_antennas, ref_snr, input_transform, hidden_dim=hidden_dim, num_layers=num_layers,
+                         out_layers=out_layers, init_embedding=init_embedding)
         channel_dim, embed_dim = 4 * num_antennas, 2 * num_antennas
         self.embed_dim = embed_dim
+        self.init_embedding = init_embedding
         self.layers = nn.ModuleList(
-            GCNLayer(channel_dim + embed_dim, hidden_dim, embed_dim) for _ in range(num_layers)
+            GCNLayer(channel_dim + embed_dim, hidden_dim, embed_dim, out_layers) for _ in range(num_layers)
         )
+
+    def initial_embedding(self, x: torch.Tensor) -> torch.Tensor:
+        """e_k^(0): zeros, or the MRT direction h_k / ||h_k|| (real and imaginary parts)."""
+        if self.init_embedding == "zeros":
+            return x.new_zeros(*x.shape[:2], self.embed_dim)
+        h = x[..., :self.embed_dim]                          # [Re h_k, Im h_k] of eq. (12)
+        return h / h.norm(dim=-1, keepdim=True).clamp_min(1e-12)
 
     def embed(self, x: torch.Tensor) -> torch.Tensor:
         # Channel part of the node feature is preserved across layers; only e_k is updated.
-        e = x.new_zeros(*x.shape[:2], self.embed_dim)
+        e = self.initial_embedding(x)
         for layer in self.layers:
             e = layer(torch.cat((x, e), dim=-1))
         return e

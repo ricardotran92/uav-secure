@@ -27,8 +27,8 @@ import yaml
 from uavsec import plotting
 from uavsec.baselines.deployment import exhaustive_search, expected_rate, heuristic_positions
 from uavsec.baselines.opt_beamforming import mrt, opt_beamformer, zero_forcing
-from uavsec.channel import load_layout
-from uavsec.config import REPO_ROOT, Config, add_config_args, config_from_args
+from uavsec.channel import load_layout, load_paper_reference
+from uavsec.config import Config, add_config_args, config_from_args
 from uavsec.models import load_model
 from uavsec.utils import Run, make_generator, resolve_device, seed_everything
 
@@ -78,8 +78,7 @@ def main() -> None:
     run = Run("deployment_sensitivity", base)
     log = run.logger
 
-    with open(REPO_ROOT / base.sac.layout_file, encoding="utf-8") as fh:
-        reference = yaml.safe_load(fh)["paper_reference"]
+    reference = load_paper_reference()
     paper_opt = np.asarray(reference["optimum"])
     paper_rates = reference["fig8_rates"]
     paper_profile = {s: r / paper_rates["Graph-DRL"] for s, r in paper_rates.items() if s != "Graph-DRL"}

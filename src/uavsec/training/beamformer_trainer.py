@@ -25,7 +25,8 @@ def build_model(kind: str, cfg: Config, num_users: int | None = None) -> Beamfor
     sys = cfg.system
     if kind == "gnn":
         return SecureBeamGNN(sys.num_antennas, reference_snr(sys), hidden_dim=cfg.gnn.hidden_dim,
-                             num_layers=cfg.gnn.num_layers, input_transform=cfg.gnn.input_transform)
+                             num_layers=cfg.gnn.num_layers, input_transform=cfg.gnn.input_transform,
+                             out_layers=cfg.gnn.out_layers, init_embedding=cfg.gnn.init_embedding)
     if kind == "mlp":
         return MLPBeamformer(sys.num_antennas, reference_snr(sys), num_users=num_users or sys.num_users,
                              hidden_dims=cfg.mlp.hidden_dims, input_transform=cfg.gnn.input_transform)
@@ -36,19 +37,28 @@ def learning_rate(kind: str, cfg: Config) -> float:
     return cfg.gnn.lr if kind == "gnn" else cfg.mlp.lr
 
 
+UAV_SAMPLING = ("uniform", "center", "near_user")
+
+
 def sample_training_batch(sys: SystemConfig, batch: int, num_users: int, gen: torch.Generator,
-                          device: torch.device, near_user_frac: float = 0.0,
-                          near_user_std_m: float = 0.0) -> tuple[torch.Tensor, torch.Tensor]:
-    """Random layouts and fading; UAV uniform in the area, or (for a ``near_user_frac`` share of
-    the batch) Gaussian around a random user, where the deployment stage actually places it."""
+                          device: torch.device, sampling: str = "uniform", frac: float = 0.0,
+                          std_m: float = 0.0) -> tuple[torch.Tensor, torch.Tensor]:
+    """Random layouts and fading. The UAV is uniform in the area, except for a ``frac`` share of
+    the batch drawn from N(anchor, std_m^2) with anchor = area centre ("center", where the UAV
+    starts) or a random user ("near_user", where deployment tends to place it)."""
+    if sampling not in UAV_SAMPLING:
+        raise ValueError(f"uav_sampling must be one of {UAV_SAMPLING}, got {sampling!r}")
     scenario = sample_scenario(sys, batch, gen, device, num_users=num_users)
     uav = sample_uav_positions(sys, batch, gen, device)
-    near = torch.rand(batch, generator=gen, device=device) < near_user_frac
-    if near.any():
-        pick = torch.randint(num_users, (batch,), generator=gen, device=device)
-        around = scenario.users[torch.arange(batch, device=device), pick]
-        around = around + near_user_std_m * torch.randn(batch, 2, generator=gen, device=device)
-        uav = torch.where(near.unsqueeze(-1), around.clamp(0.0, sys.area_size), uav)
+    biased = torch.rand(batch, generator=gen, device=device) < (frac if sampling != "uniform" else 0.0)
+    if biased.any():
+        if sampling == "center":
+            anchor = torch.full((batch, 2), sys.area_size / 2, device=device)
+        else:
+            pick = torch.randint(num_users, (batch,), generator=gen, device=device)
+            anchor = scenario.users[torch.arange(batch, device=device), pick]
+        around = anchor + std_m * torch.randn(batch, 2, generator=gen, device=device)
+        uav = torch.where(biased.unsqueeze(-1), around.clamp(0.0, sys.area_size), uav)
     return channels(sys, uav, scenario, gen)
 
 
@@ -93,7 +103,7 @@ def train_beamformer(model: Beamformer, cfg: Config, *, num_users: int, epochs: 
         losses = []
         for _ in range(g.batches_per_epoch):
             h, h_e = sample_training_batch(sys, g.batch_size, num_users, train_gen, device,
-                                           g.uav_near_user_frac, g.uav_near_user_std_m)
+                                           g.uav_sampling, g.uav_sampling_frac, g.uav_sampling_std_m)
             w = model(h, h_e, sys.power_max_w)
             loss = -sum_secrecy_rate(h, h_e, w, clamp=g.clamp_loss).mean()
             optimizer.zero_grad(set_to_none=True)
