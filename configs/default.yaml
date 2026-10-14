@@ -36,11 +36,11 @@ gnn:
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
   lr_schedule: cosine       # assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
-  uav_sampling: uniform     # assumption: training UAV positions: uniform | center | near_user
-  uav_sampling_frac: 0.5    # assumption: share drawn around the anchor (ignored for uniform)
-  uav_sampling_std_m: 30.0  # assumption: spread (m) around the anchor
+  uav_sampling: center      # assumption: training UAV positions: uniform | center | near_user (center: stable training, Fig. 4 loss closer)
+  uav_sampling_frac: 0.8    # assumption: share drawn around the anchor (ignored for uniform)
+  uav_sampling_std_m: 40.0  # assumption: spread (m) around the anchor
   out_layers: 2             # assumption: depth of the f_out MLP in each GCN layer (eq. (18))
-  init_embedding: zeros     # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
+  init_embedding: mrt       # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption
@@ -58,7 +58,7 @@ sac:
   net_arch: [256, 256]      # assumption
   max_step_m: 2.5           # assumption: action [-1,1]^2 scaled to metres (smoother trajectory than 5 m)
   topology_seed: 2025       # fixed user/eavesdropper layout for the run
-  layout_file: configs/layouts/paper_fig7.yaml  # fixed layout of Fig. 7; "" = random layout from topology_seed
+  layout_file: configs/layouts/paper_fig7_swapped.yaml  # Fig. 7 layout; U5/U6 eavesdroppers swapped (pairing inferred, see docs); "" = random layout
   obs_transform: log        # assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)
   reward_scale: 0.1         # assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec
   eval_every_episodes: 10   # assumption: deterministic evaluation interval; the best policy is kept
