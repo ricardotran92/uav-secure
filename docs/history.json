@@ -324,6 +324,78 @@
       "after": "Top-2 trick, O(K) memory, bit-identical results (checked for K = 1, 2, 5, 12 and ties); evaluation chunks of 8192.",
       "reason": "Two SAC runs crashed in the final grid search.",
       "evidence": "Tests pass; outputs identical to the K x K reference."
+    },
+    {
+      "id": "C20",
+      "phase": 5,
+      "area": "evaluation",
+      "status": "active",
+      "commits": [],
+      "title": "Paper-match scorecard and digitised paper values",
+      "before": "Agreement with the paper judged figure by figure, from rough readings.",
+      "after": "configs/paper_reference.yaml holds Fig. 4-10 digitised at 400 dpi; src/uavsec/scorecard.py gives one error per figure and a weighted total (lower is better; MLP curves reported but not scored, so a weaker baseline can never improve the score). Shown in every report.",
+      "reason": "Adopt or reject changes on one objective criterion instead of picking the figure that looks best.",
+      "evidence": "R7 total 0.157; Table I as printed (R8) 2.30. The digitisation corrected two earlier readings: the paper's OPT at K=8 is 15.5 (not 16.5) and its GNN 14.8, i.e. GNN/OPT about 0.95."
+    },
+    {
+      "id": "C21",
+      "phase": 4,
+      "area": "system_model",
+      "status": "rejected",
+      "commits": [],
+      "title": "Swapped U5/U6 eavesdropper pairing (configs/layouts/paper_fig7_swapped.yaml)",
+      "before": "U5-E5 25.4 m, U6-E6 15.4 m.",
+      "after": "Tested U5-E6 8.6 m, U6-E5 14.7 m; kept as an option, not default.",
+      "reason": "Requested by the user; the paper does not give the pairing.",
+      "evidence": "With the R7 GNNs the Fig. 7 optimum per seed moved from 0 / 11.7 / 7.2 m to 0 / 8.9 / 2.8 m and the SAC endpoint to 3.0 m from the paper's; under OPT the two pairings are identical. Combined with the other R9/R10 changes the total score did not beat R7, so R7 (original pairing) stays."
+    },
+    {
+      "id": "C22",
+      "phase": 2,
+      "area": "gnn",
+      "status": "rejected",
+      "commits": [],
+      "title": "Centre-biased UAV positions for GNN training (gnn.uav_sampling = center)",
+      "before": "UAV uniform in the area during training.",
+      "after": "Tested 50% or 80% of samples around the area centre (std 40 m); kept as an option, not default.",
+      "reason": "The paper's Fig. 4 loss (-14.9) equals its GNN rate with the UAV at the centre (Fig. 9a), which suggests centre-biased training data.",
+      "evidence": "Fig. 4 error 0.319 -> 0.20-0.25, seed-to-seed std of the validation rate 1.57 -> 0.02, GNN/OPT 85-86%. But the GNN-based Fig. 7 optimum moved further from the paper's on average (6.3 m -> about 10.5 m over 3 seeds). Totals: R9 (80% + MRT init + swap) 0.167, R10 (50% + swap) 0.163, both above R7's 0.157."
+    },
+    {
+      "id": "C23",
+      "phase": 2,
+      "area": "gnn",
+      "status": "rejected",
+      "commits": [],
+      "title": "Deeper f_out (3 layers) and MRT initial embedding",
+      "before": "f_out with 2 layers; e_k^(0) = 0.",
+      "after": "Options gnn.out_layers and gnn.init_embedding kept; defaults unchanged.",
+      "reason": "Both are unspecified in the paper.",
+      "evidence": "f_out 3 layers: 85% of OPT, optimum 16.1 m (no gain). MRT init: +1 point of GNN/OPT, optimum 11.7 m."
+    },
+    {
+      "id": "C24",
+      "phase": 4,
+      "area": "system_model",
+      "status": "rejected",
+      "commits": [],
+      "title": "Minimum distance 25-30 m and eavesdropper distance spread",
+      "before": "min_distance_m = 20, eavesdropper exactly 20 m away.",
+      "after": "Options kept; defaults unchanged.",
+      "reason": "Unspecified details.",
+      "evidence": "25-30 m: optimum 8-12 m from the paper's but Fig. 8 profile error 0.195-0.204 (vs 0.160) and lower rate. The eavesdropper spread option was implemented and tested in unit tests only."
+    },
+    {
+      "id": "C25",
+      "phase": 4,
+      "area": "sac",
+      "status": "active",
+      "commits": [],
+      "title": "SAC robustness: two more training seeds for the R7 configuration",
+      "before": "One SAC seed.",
+      "after": "Seeds 0, 1, 2 with the same R7 GNN.",
+      "reason": "Report the spread of the learned deployment.",
+      "evidence": "seed 0: end (61.8, 146.3), 2.4 m from the optimum, 5.8 m from the paper's end point, 99.0% of the optimum, +43.2% vs best heuristic; seed 1: end (60.0, 143.5), 2.5 m from the optimum, 2.5 m from the paper's end point, 98.7% of the optimum, +43.5% vs best heuristic; seed 2: end (61.2, 146.3), 4.4 m from the optimum, 5.4 m from the paper's end point, 99.5% of the optimum, +44.9% vs best heuristic"
     }
   ],
   "results_snapshots": [
@@ -580,7 +652,55 @@
         },
         "graph_drl_vs_optimum_pct": 99.0,
         "graph_drl_gain_over_best_heuristic_pct": 43.2
-      }
+      },
+      "scorecard_total": 0.157,
+      "scorecard": {
+        "fig4": 0.319,
+        "fig5": 0.3,
+        "fig6": 0.043,
+        "fig7_optimum": 0.144,
+        "fig7_sac": 0.115,
+        "fig8": 0.16,
+        "fig9a": 0.055,
+        "fig9b": 0.359,
+        "fig9c": 0.093,
+        "fig10": 0.046
+      },
+      "sac_seeds": [
+        {
+          "seed": 0,
+          "end": [
+            61.8,
+            146.3
+          ],
+          "to_opt": 2.4,
+          "to_paper_end": 5.8,
+          "vs_opt": 99.0,
+          "vs_heur": 43.2
+        },
+        {
+          "seed": 1,
+          "end": [
+            60.0,
+            143.5
+          ],
+          "to_opt": 2.5,
+          "to_paper_end": 2.5,
+          "vs_opt": 98.7,
+          "vs_heur": 43.5
+        },
+        {
+          "seed": 2,
+          "end": [
+            61.2,
+            146.3
+          ],
+          "to_opt": 4.4,
+          "to_paper_end": 5.4,
+          "vs_opt": 99.5,
+          "vs_heur": 44.9
+        }
+      ]
     },
     {
       "id": "R8",
@@ -613,6 +733,69 @@
         "graph_drl_gain_over_best_heuristic_pct": 5.3
       },
       "note": "Kept to show that Table I read with log10 and 3-D distance cannot reproduce Fig. 7-9 of the paper."
+    },
+    {
+      "id": "R9",
+      "label": "Candidate: R7 + swapped pairing + centre-biased training (80%) + MRT init",
+      "after_changes": [
+        "C21",
+        "C22",
+        "C23"
+      ],
+      "scorecard_total": 0.167,
+      "scorecard": {
+        "fig4": 0.253,
+        "fig5": 0.191,
+        "fig6": 0.018,
+        "fig7_optimum": 0.322,
+        "fig7_sac": 0.182,
+        "fig8": 0.155,
+        "fig9a": 0.057,
+        "fig9b": 0.352,
+        "fig9c": 0.089,
+        "fig10": 0.036
+      },
+      "deployment": {
+        "seed_optimum_distance_to_paper_m": [
+          16.1,
+          8.9,
+          7.2
+        ]
+      },
+      "decision": "rejected (total above R7)"
+    },
+    {
+      "id": "R10",
+      "label": "Candidate: R7 + swapped pairing + centre-biased training (50%)",
+      "after_changes": [
+        "C21",
+        "C22"
+      ],
+      "scorecard_total": 0.163,
+      "scorecard": {
+        "fig4": 0.201,
+        "fig5": 0.209,
+        "fig6": 0.012,
+        "fig7_optimum": 0.288,
+        "fig7_sac": 0.226,
+        "fig8": 0.153,
+        "fig9a": 0.058,
+        "fig9b": 0.342,
+        "fig9c": 0.089,
+        "fig10": 0.043
+      },
+      "convergence": {
+        "gnn_val": "11.29 +- 0.02"
+      },
+      "deployment": {
+        "seed_optimum_distance_to_paper_m": [
+          14.4,
+          2.8,
+          14.4
+        ],
+        "sac_to_optimum_m": 0.8
+      },
+      "decision": "rejected (total above R7); best on 7 of 10 figures and the most stable training"
     }
   ],
   "tuning_knobs": [
@@ -870,31 +1053,37 @@
     }
   ],
   "open_issues": [
-    "GNN reaches 82-89% of our OPT across K (85% at K=8); the paper reports its GNN close to its OPT. In absolute terms our OPT matches the paper's OPT closely (Fig. 9a/9b), our GNN is about 10% below the paper's GNN.",
-    "GNN trained at 1 W loses ground at 40 dBm (69% of OPT); the paper's GNN keeps closer to OPT there.",
-    "Fig. 8: heuristics reach 61-69% of the optimum here vs 39-61% in the paper (same ordering, smaller gaps).",
-    "One of three GNN seeds trains worse (validation std 1.57); the deployed GNN is the best-validation seed.",
-    "GNN-based optimum per seed: 0.0, 11.7 and 7.2 m from the paper's optimum.",
-    "Eavesdropper-to-user pairing in the Fig. 7 layout is inferred; one cluster (U5/U6, E5/E6) is ambiguous.",
-    "Only one SAC training seed per profile.",
+    "GNN reaches 81-89% of our OPT (0.85 at K=8); the paper's GNN reaches 84-97% of its OPT. Our OPT itself matches the paper's OPT curves (Fig. 9a/b/c), so the gap is in the GNN: about 8% below the paper's GNN in absolute terms.",
+    "GNN trained at 1 W loses ground at 40 dBm (69% of OPT vs 85% in the paper).",
+    "Fig. 4: our training loss is -10.1 vs -14.9 in the paper. Centre-biased training data closes part of this (-11.9, C22) but moves the Fig. 7 optimum further away, so it is not used.",
+    "Fig. 8: heuristics reach 62-70% of Graph-DRL here vs 39-61% in the paper (same ordering, smaller gaps).",
+    "The Fig. 7 optimum sits on a flat top (the paper's point reaches 99% of the maximum in every variant), so its location moves 0-16 m between GNN seeds.",
+    "Eavesdropper-to-user pairing in the Fig. 7 layout is inferred; the swapped U5/U6 pairing is an equally plausible reading (C21).",
     "Table I reference profile (log10, 3-D distance) stays unstable and far from the paper's figures, as expected."
   ],
   "highlights": {
     "snapshot": "R7",
-    "note": "Paper values are read off the published figures (about +-5%). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference.",
+    "note": "Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Paper-match score (lower is better): R7 0.157, R10 0.163, R9 0.167, Table I as printed 2.30.",
     "items": [
       {
         "figure": "Fig. 9b",
         "metric": "OPT vs transmit power (-20 / 0 / 10 / 20 / 30 / 40 dBm)",
-        "paper": "0 / 1 / 3 / 7 / 15 / 28",
-        "ours": "0.1 / 1.7 / 4.3 / 8.8 / 16.2 / 27.2",
+        "paper": "0 / 1.0 / 3.2 / 7.5 / 15.8 / 28.0",
+        "ours": "0.1 / 1.8 / 4.3 / 8.7 / 16.2 / 27.3",
         "status": "match"
       },
       {
         "figure": "Fig. 9a",
-        "metric": "OPT at K = 8 / K = 11",
-        "paper": "16.5 / 18",
-        "ours": "16.2 / 18.6",
+        "metric": "OPT at K = 1 / 4 / 8 / 11",
+        "paper": "4.3 / 10.9 / 15.5 / 18.2",
+        "ours": "3.8 / 10.8 / 16.2 / 18.6",
+        "status": "match"
+      },
+      {
+        "figure": "Fig. 9c",
+        "metric": "OPT vs noise power (0.3 / 1.2 / 9.6 x 1e-13 W)",
+        "paper": "21.5 / 15.7 / 7.6",
+        "ours": "22.4 / 16.2 / 9.2",
         "status": "match"
       },
       {
@@ -906,16 +1095,23 @@
       },
       {
         "figure": "Fig. 7",
-        "metric": "SAC endpoint to the search optimum",
+        "metric": "SAC endpoint to the search optimum (3 SAC seeds)",
         "paper": "about 3 m",
-        "ours": "2.4 m",
+        "ours": "2.4 / 2.5 / 4.4 m",
+        "status": "match"
+      },
+      {
+        "figure": "Fig. 10",
+        "metric": "Median sum secrecy rate, OPT K = 8 / 12 (GNN: 13.5 / 16.1 vs 15.0 / 17.5)",
+        "paper": "16.0 / 19.5",
+        "ours": "15.9 / 19.5",
         "status": "match"
       },
       {
         "figure": "Fig. 7",
         "metric": "Search optimum to the paper's optimum (56, 140)",
         "paper": "0 m",
-        "ours": "7.2 m (seeds: 0 / 11.7 / 7.2 m)",
+        "ours": "7.2 m (GNN seeds: 0 / 11.7 / 7.2 m)",
         "status": "close"
       },
       {
@@ -926,44 +1122,44 @@
         "status": "close"
       },
       {
-        "figure": "Fig. 8",
-        "metric": "Heuristic rate / optimum",
-        "paper": "0.39-0.61",
-        "ours": "0.61-0.69",
-        "status": "gap"
-      },
-      {
         "figure": "Fig. 5",
         "metric": "Transfer learning 8 -> 12 users vs re-training",
-        "paper": "faster and higher",
-        "ours": "95% at epoch 0; 14.0 vs 11.1",
-        "status": "match"
-      },
-      {
-        "figure": "Fig. 4",
-        "metric": "Final training loss GNN / MLP",
-        "paper": "-15 / -5",
-        "ours": "-10.1 / -7.8",
+        "paper": "-18.0 vs -17.7",
+        "ours": "transfer better (14.0 vs 11.1 bps/Hz)",
         "status": "close"
       },
       {
         "figure": "Fig. 9a",
         "metric": "GNN at K = 8 / K = 11",
-        "paper": "15.5 / 16",
+        "paper": "14.8 / 16.1",
         "ours": "13.7 / 15.3",
         "status": "close"
       },
       {
+        "figure": "Fig. 4",
+        "metric": "Final training loss GNN / MLP",
+        "paper": "-14.9 / -5.0",
+        "ours": "-10.1 / -7.8",
+        "status": "gap"
+      },
+      {
         "figure": "Fig. 9",
         "metric": "GNN / OPT ratio across K",
-        "paper": "about 0.93",
-        "ours": "0.82-0.89",
+        "paper": "0.84-0.97 (0.95 at K = 8)",
+        "ours": "0.81-0.89 (0.85 at K = 8)",
+        "status": "gap"
+      },
+      {
+        "figure": "Fig. 8",
+        "metric": "Heuristic rate / optimum",
+        "paper": "0.39-0.61",
+        "ours": "0.62-0.70",
         "status": "gap"
       },
       {
         "figure": "Fig. 9b",
         "metric": "GNN / OPT at 40 dBm",
-        "paper": "about 0.85",
+        "paper": "0.85",
         "ours": "0.69",
         "status": "gap"
       }

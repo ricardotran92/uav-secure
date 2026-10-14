@@ -119,6 +119,12 @@
         "matches_paper": true
       },
       {
+        "key": "system.eve_distance_spread",
+        "value": 0.0,
+        "source": "assumption",
+        "note": "assumption: distance drawn uniformly from eve_distance +- spread (training/test layouts)"
+      },
+      {
         "key": "system.antenna_spacing",
         "value": 0.5,
         "source": "assumption",
@@ -220,16 +226,34 @@
         "note": "assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP"
       },
       {
-        "key": "gnn.uav_near_user_frac",
-        "value": 0.0,
+        "key": "gnn.uav_sampling",
+        "value": "uniform",
         "source": "assumption",
-        "note": "assumption: share of training samples with the UAV around a random user (rest uniform)"
+        "note": "assumption: training UAV positions: uniform | center | near_user (center tested in R9/R10, not adopted)"
       },
       {
-        "key": "gnn.uav_near_user_std_m",
-        "value": 30.0,
+        "key": "gnn.uav_sampling_frac",
+        "value": 0.5,
         "source": "assumption",
-        "note": "assumption: spread (m) of those UAV positions around the user"
+        "note": "assumption: share drawn around the anchor (ignored for uniform)"
+      },
+      {
+        "key": "gnn.uav_sampling_std_m",
+        "value": 40.0,
+        "source": "assumption",
+        "note": "assumption: spread (m) around the anchor"
+      },
+      {
+        "key": "gnn.out_layers",
+        "value": 2,
+        "source": "assumption",
+        "note": "assumption: depth of the f_out MLP in each GCN layer (eq. (18))"
+      },
+      {
+        "key": "gnn.init_embedding",
+        "value": "zeros",
+        "source": "assumption",
+        "note": "assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)"
       },
       {
         "key": "mlp.hidden_dims",
@@ -330,7 +354,7 @@
         "key": "sac.layout_file",
         "value": "configs/layouts/paper_fig7.yaml",
         "source": "implementation",
-        "note": "fixed layout of Fig. 7; \"\" = random layout from topology_seed"
+        "note": "fixed layout of Fig. 7 (swapped U5/U6 pairing tested in R9/R10, not adopted); \"\" = random layout"
       },
       {
         "key": "sac.obs_transform",
@@ -637,6 +661,12 @@
         "matches_paper": true
       },
       {
+        "key": "system.eve_distance_spread",
+        "value": 0.0,
+        "source": "assumption",
+        "note": "assumption: distance drawn uniformly from eve_distance +- spread (training/test layouts)"
+      },
+      {
         "key": "system.antenna_spacing",
         "value": 0.5,
         "source": "assumption",
@@ -735,16 +765,34 @@
         "note": "assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP"
       },
       {
-        "key": "gnn.uav_near_user_frac",
-        "value": 0.0,
+        "key": "gnn.uav_sampling",
+        "value": "uniform",
         "source": "assumption",
-        "note": "assumption: share of training samples with the UAV around a random user (rest uniform)"
+        "note": "assumption: training UAV positions: uniform | center | near_user (center tested in R9/R10, not adopted)"
       },
       {
-        "key": "gnn.uav_near_user_std_m",
-        "value": 30.0,
+        "key": "gnn.uav_sampling_frac",
+        "value": 0.5,
         "source": "assumption",
-        "note": "assumption: spread (m) of those UAV positions around the user"
+        "note": "assumption: share drawn around the anchor (ignored for uniform)"
+      },
+      {
+        "key": "gnn.uav_sampling_std_m",
+        "value": 40.0,
+        "source": "assumption",
+        "note": "assumption: spread (m) around the anchor"
+      },
+      {
+        "key": "gnn.out_layers",
+        "value": 2,
+        "source": "assumption",
+        "note": "assumption: depth of the f_out MLP in each GCN layer (eq. (18))"
+      },
+      {
+        "key": "gnn.init_embedding",
+        "value": "zeros",
+        "source": "assumption",
+        "note": "assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)"
       },
       {
         "key": "mlp.hidden_dims",
@@ -845,7 +893,7 @@
         "key": "sac.layout_file",
         "value": "configs/layouts/paper_fig7.yaml",
         "source": "implementation",
-        "note": "fixed layout of Fig. 7; \"\" = random layout from topology_seed"
+        "note": "fixed layout of Fig. 7 (swapped U5/U6 pairing tested in R9/R10, not adopted); \"\" = random layout"
       },
       {
         "key": "sac.obs_transform",
