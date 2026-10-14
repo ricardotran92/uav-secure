@@ -37,10 +37,10 @@ gnn:
   lr_schedule: cosine       # assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
   uav_sampling: center      # assumption: training UAV positions: uniform | center | near_user (center: stable training, Fig. 4 loss closer)
-  uav_sampling_frac: 0.8    # assumption: share drawn around the anchor (ignored for uniform)
+  uav_sampling_frac: 0.5    # assumption: share drawn around the anchor (ignored for uniform)
   uav_sampling_std_m: 40.0  # assumption: spread (m) around the anchor
   out_layers: 2             # assumption: depth of the f_out MLP in each GCN layer (eq. (18))
-  init_embedding: mrt       # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
+  init_embedding: zeros     # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption
