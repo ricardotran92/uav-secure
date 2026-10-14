@@ -128,13 +128,33 @@ def parameters_md(profiles: dict[str, list[dict]], knobs: list[dict]) -> str:
     return "\n".join(out) + "\n"
 
 
+STATUS = {"match": "✅ match", "close": "🟡 close", "gap": "⚠️ gap"}
+
+
+def highlights_md(h: dict) -> list[str]:
+    """'Paper vs ours' table for the current best snapshot, shown right under the title."""
+    hl = h.get("highlights")
+    if not hl:
+        return []
+    counts = {k: sum(i["status"] == k for i in hl["items"]) for k in STATUS}
+    out = [f"## ⭐ Highlights: paper vs ours (snapshot {hl['snapshot']}, current best)", "",
+           f"**{counts['match']} match · {counts['close']} close · {counts['gap']} gap.** {hl['note']}", "",
+           "| Figure | Metric | Paper | Ours | Status |", "|---|---|---|---|---|"]
+    order = list(STATUS)
+    for i in sorted(hl["items"], key=lambda i: order.index(i["status"])):
+        ours = f"**{i['ours']}**" if i["status"] == "match" else i["ours"]
+        out.append(f"| {i['figure']} | {esc(i['metric'])} | {esc(i['paper'])} | {esc(ours)} | {STATUS[i['status']]} |")
+    return out + [""]
+
+
 def history_md(h: dict, main: list[dict]) -> str:
     out = [f"# Model and parameter history", "", f"_{h['meta']['project']}_  ", f"Updated {h['meta']['updated']}.", "",
            f"- **Main profile:** {h['meta']['main_profile']}",
            f"- **Reference profile:** {h['meta']['reference_profile']}",
            "- Current parameters with provenance markers: [PARAMETERS.md](PARAMETERS.md) (machine-readable: "
-           "[parameters.json](parameters.json)). Source of this history: [history.json](history.json).", "",
-           "## 1. Architecture", "", "| Block | What it does | Paper |", "|---|---|---|"]
+           "[parameters.json](parameters.json)). Source of this history: [history.json](history.json).", ""]
+    out += highlights_md(h)
+    out += ["## 1. Architecture", "", "| Block | What it does | Paper |", "|---|---|---|"]
     out += [f"| **{b['block']}** | {esc(b['description'])} | {esc(b['paper'])} |" for b in h["architecture"]]
 
     out += ["", "## 2. Current state at a glance", "", "**Calibrated / assumed parameters in use:**", ""]
@@ -166,8 +186,12 @@ def history_md(h: dict, main: list[dict]) -> str:
             out.append("- **Commits:** " + ", ".join(f"`{x}`" for x in c["commits"]))
 
     out += ["", "## 4. Result snapshots", ""]
+    current = (h.get("highlights") or {}).get("snapshot")
     for s in h["results_snapshots"]:
-        out += [f"### {s['id']} - {s['label']}", "", "```json", json.dumps({k: v for k, v in s.items()
+        title = f"### {s['id']} - {s['label']}"
+        if s["id"] == current:
+            title = f"### ⭐ CURRENT BEST - {s['id']} - {s['label']}"
+        out += [title, "", "```json", json.dumps({k: v for k, v in s.items()
                                                                            if k not in ("id", "label")}, indent=2), "```", ""]
     out += ["## 5. Open issues", ""] + [f"- {i}" for i in h["open_issues"]]
     return "\n".join(out) + "\n"

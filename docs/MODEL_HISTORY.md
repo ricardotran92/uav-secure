@@ -7,6 +7,25 @@ Updated 2026-10-14.
 - **Reference profile:** configs/default.yaml (Table I as printed)  ->  outputs/runs/
 - Current parameters with provenance markers: [PARAMETERS.md](PARAMETERS.md) (machine-readable: [parameters.json](parameters.json)). Source of this history: [history.json](history.json).
 
+## ⭐ Highlights: paper vs ours (snapshot R7, current best)
+
+**5 match · 4 close · 3 gap.** Paper values are read off the published figures (about +-5%). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference.
+
+| Figure | Metric | Paper | Ours | Status |
+|---|---|---|---|---|
+| Fig. 9b | OPT vs transmit power (-20 / 0 / 10 / 20 / 30 / 40 dBm) | 0 / 1 / 3 / 7 / 15 / 28 | **0.1 / 1.7 / 4.3 / 8.8 / 16.2 / 27.2** | ✅ match |
+| Fig. 9a | OPT at K = 8 / K = 11 | 16.5 / 18 | **16.2 / 18.6** | ✅ match |
+| Fig. 6 | SAC final episode reward / secrecy rate | 4.4e3 / 25 | **4.2e3 / 24.0** | ✅ match |
+| Fig. 7 | SAC endpoint to the search optimum | about 3 m | **2.4 m** | ✅ match |
+| Fig. 5 | Transfer learning 8 -> 12 users vs re-training | faster and higher | **95% at epoch 0; 14.0 vs 11.1** | ✅ match |
+| Fig. 7 | Search optimum to the paper's optimum (56, 140) | 0 m | 7.2 m (seeds: 0 / 11.7 / 7.2 m) | 🟡 close |
+| Fig. 8 | Graph-DRL vs best heuristic | +64% (23 vs 14) | +43% (24.9 vs 17.4) | 🟡 close |
+| Fig. 4 | Final training loss GNN / MLP | -15 / -5 | -10.1 / -7.8 | 🟡 close |
+| Fig. 9a | GNN at K = 8 / K = 11 | 15.5 / 16 | 13.7 / 15.3 | 🟡 close |
+| Fig. 8 | Heuristic rate / optimum | 0.39-0.61 | 0.61-0.69 | ⚠️ gap |
+| Fig. 9 | GNN / OPT ratio across K | about 0.93 | 0.82-0.89 | ⚠️ gap |
+| Fig. 9b | GNN / OPT at 40 dBm | about 0.85 | 0.69 | ⚠️ gap |
+
 ## 1. Architecture
 
 | Block | What it does | Paper |
@@ -400,7 +419,7 @@ Updated 2026-10-14.
 }
 ```
 
-### R7 - FINAL main profile v3 (calibrated + 20 m minimum distance, GNN 512 + cosine, tuned SAC)
+### ⭐ CURRENT BEST - R7 - FINAL main profile v3 (calibrated + 20 m minimum distance, GNN 512 + cosine, tuned SAC)
 
 ```json
 {
