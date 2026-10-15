@@ -852,7 +852,8 @@
       },
       "beamforming_K8_1W": {
         "GNN": 13.91,
-        "OPT": 16.2
+        "OPT": 16.2,
+        "MLP": 9.0
       },
       "deployment": {
         "optimum_gnn": [
@@ -907,13 +908,28 @@
           "Circumcenter": 17.68,
           "Polygon centroid": 16.56,
           "Exhaustive search": 26.01
-        }
+        },
+        "paper_optimum": [
+          56,
+          140
+        ],
+        "sac_to_optimum_m": 4.7,
+        "graph_drl_vs_optimum_pct": 99.3,
+        "graph_drl_gain_over_best_heuristic_pct": 39.1
       },
       "fig6": {
         "episode_reward": 4382,
         "secrecy_rate": 25.0
       },
-      "location": "outputs/runs_calibrated/ (reference profile: outputs/runs/, report outputs/report/)"
+      "location": "outputs/runs_calibrated/ (reference profile: outputs/runs/, report outputs/report/)",
+      "gnn_over_opt": {
+        "K=1": 0.68,
+        "K=2": 0.76,
+        "K=4": 0.87,
+        "K=8": 0.86,
+        "K=11": 0.85,
+        "40 dBm": 0.72
+      }
     }
   ],
   "tuning_knobs": [
