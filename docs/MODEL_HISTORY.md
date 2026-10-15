@@ -9,7 +9,7 @@ Updated 2026-10-14.
 
 ## ⭐ Highlights: paper vs ours (snapshot R7, current best)
 
-**6 match · 4 close · 4 gap.** Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Paper-match score (lower is better): R7 0.157, R10 0.163, R9 0.167, Table I as printed 2.30.
+**6 match · 4 close · 4 gap.** Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Paper-match score (lower is better): R7 0.157, R10 0.163, R9 0.167, Table I as printed 2.30. R7 uses the original pairing (U5-E5, U6-E6); the swapped pairing scores 0.145 (C21).
 
 | Figure | Metric | Paper | Ours | Status |
 |---|---|---|---|---|
@@ -272,9 +272,9 @@ Updated 2026-10-14.
 ### C21 - Swapped U5/U6 eavesdropper pairing (configs/layouts/paper_fig7_swapped.yaml)  ·  ✖ rejected
 
 - **Before:** U5-E5 25.4 m, U6-E6 15.4 m.
-- **After:** Tested U5-E6 8.6 m, U6-E5 14.7 m; kept as an option, not default.
-- **Why:** Requested by the user; the paper does not give the pairing.
-- **Evidence:** With the R7 GNNs the Fig. 7 optimum per seed moved from 0 / 11.7 / 7.2 m to 0 / 8.9 / 2.8 m and the SAC endpoint to 3.0 m from the paper's; under OPT the two pairings are identical. Combined with the other R9/R10 changes the total score did not beat R7, so R7 (original pairing) stays.
+- **After:** Tested U5-E6 8.6 m, U6-E5 14.7 m; kept as an option (configs/layouts/paper_fig7_swapped.yaml), not default.
+- **Why:** Requested by the user; the paper does not give the pairing. Not adopted because the user keeps R7 with the original pairing as the standard (2026-10-15).
+- **Evidence:** Clean ablation on R7 (same GNN checkpoint, same SAC seed, only the pairing differs; Figs. 4/5/9/10 do not depend on the pairing because the GNN is trained on random layouts): Fig. 7 optimum 7.2 -> 2.8 m from the paper's, SAC endpoint 5.8 -> 3.0 m from the paper's end point, GNN optimum per seed 0/11.7/7.2 -> 0/8.9/2.8 m; Fig. 6 error 0.043 -> 0.050, Fig. 8 error 0.160 -> 0.177, Graph-DRL gain over the best heuristic +43% -> +28%. Scorecard total 0.157 -> 0.145 (better). Under OPT the two pairings are identical. Correction: an earlier version of this entry said the swap did not beat R7; that judgement came from R9/R10, which mixed the swap with centre-biased training.
 
 ### C22 - Centre-biased UAV positions for GNN training (gnn.uav_sampling = center)  ·  ✖ rejected
 
