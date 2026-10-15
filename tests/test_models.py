@@ -81,3 +81,14 @@ def test_gnn_variants_stay_permutation_equivariant(cfg, out_layers, init):
 def test_scorecard_relative_error():
     from uavsec.scorecard import relative_error
     assert relative_error([10.0, 0.5], [10.0, 0.0]) == pytest.approx(0.25)   # floor of 1 for tiny paper values
+
+
+def test_beamforming_parts_need_the_right_mlps():
+    import importlib.util, sys
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("exp_beamforming", Path(__file__).parents[1] / "scripts" / "exp_beamforming.py")
+    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    ev = load_config([DEFAULT_CONFIG]).eval
+    assert mod.needed_mlp_users({"power"}, ev, 8) == {8}
+    assert mod.needed_mlp_users({"users"}, ev, 8) == set(ev.sweep_users)
+    assert mod.needed_mlp_users({"cdf", "noise"}, ev, 8) == set(ev.cdf_users) | {8}
