@@ -28,6 +28,14 @@ src/uavsec/
 scripts/                  experiment entry points (one per phase)
 scripts/server/           environment setup, code sync, run-all
 tests/                    pytest suite (rates vs numpy reference, permutation equivariance, env, heuristics)
+source_materials/          reference documents and original project context
+  course-requirements.md   course deliverables extracted from the syllabus
+  paper-parameters.md      paper settings, source locations, and unspecified details
+  compute-environment.md  available server hardware and access information
+  prompts.md              initial implementation request; historical context
+  claude-history.md       prior discussion; suggestions require verification
+  CH00-Syllabus.pdf       original course syllabus
+  Tang et al. - 2025 - Deep Graph Reinforcement Learning for UAV-Enabled Multi-User Secure Communications.pdf       primary research paper
 ```
 
 ## Setup

@@ -36,9 +36,9 @@ gnn:
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
   lr_schedule: cosine       # assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
-  uav_sampling: uniform     # assumption: training UAV positions: uniform | center | near_user (center tested in R9/R10, not adopted)
-  uav_sampling_frac: 0.5    # assumption: share drawn around the anchor (ignored for uniform)
-  uav_sampling_std_m: 40.0  # assumption: spread (m) around the anchor
+  uav_sampling: center      # paper Sec. VI: "the UAV base station is initialized at the area center ... this is the setup to train the GNN model"
+  uav_sampling_frac: 1.0    # every training sample has the UAV at the area centre
+  uav_sampling_std_m: 0.0   # exactly at the centre (no spread)
   out_layers: 2             # assumption: depth of the f_out MLP in each GCN layer (eq. (18))
   init_embedding: zeros     # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
 
