@@ -97,9 +97,13 @@ scripts/server/sync.sh pull                       # fetch outputs back
   almost flat: every heuristic reaches over 90 % of the optimum, while the paper's Fig. 8 shows 39-61 %, and
   the optimum is ill-defined (about 50 m from the paper's). Reading log as the natural logarithm, with the
   horizontal UAV-node distance, reproduces the paper's deployment results: the GNN-based optimum lies close to the paper's
-  Fig. 7 optimum (7.2 m for the deployed GNN; 0.0 / 11.7 / 7.2 m over three seeds). The evidence is in
+  Fig. 7 optimum (15.6 m for the deployed GNN; 13.4 / 15.6 / 8.9 m over three seeds; the paper's point reaches
+  98-100 % of the maximum). The evidence is in
   `scripts/study_deployment_sensitivity.py` (section 5 of the report). Table I as printed is still run as a
   reference (`outputs/runs/`, `outputs/report/`).
+- **GNN training setup from the paper's text:** "the UAV base station is initialized at the area center ...
+  this is the setup to train the GNN model" (Sec. VI), so every training sample has the UAV at the area centre
+  (users and eavesdroppers random). This brought the Fig. 4 loss to -13.6 (paper -14.9; uniform UAV gave -10.1).
 - **Unspecified training details** (all in `configs/default.yaml`, marked `# assumption`; see
   [docs/PARAMETERS.md](docs/PARAMETERS.md)): GNN hidden width 512 with 50 fresh mini-batches per episode and a
   cosine learning-rate schedule that starts at the Table I value 0.005; gradient-norm clipping; SAC with 2 gradient

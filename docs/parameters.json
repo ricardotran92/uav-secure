@@ -227,21 +227,21 @@
       },
       {
         "key": "gnn.uav_sampling",
-        "value": "uniform",
-        "source": "assumption",
-        "note": "assumption: training UAV positions: uniform | center | near_user (center tested in R9/R10, not adopted)"
+        "value": "center",
+        "source": "implementation",
+        "note": "paper Sec. VI: \"the UAV base station is initialized at the area center ... this is the setup to train the GNN model\""
       },
       {
         "key": "gnn.uav_sampling_frac",
-        "value": 0.5,
-        "source": "assumption",
-        "note": "assumption: share drawn around the anchor (ignored for uniform)"
+        "value": 1.0,
+        "source": "implementation",
+        "note": "every training sample has the UAV at the area centre"
       },
       {
         "key": "gnn.uav_sampling_std_m",
-        "value": 40.0,
-        "source": "assumption",
-        "note": "assumption: spread (m) around the anchor"
+        "value": 0.0,
+        "source": "implementation",
+        "note": "exactly at the centre (no spread)"
       },
       {
         "key": "gnn.out_layers",
@@ -766,21 +766,21 @@
       },
       {
         "key": "gnn.uav_sampling",
-        "value": "uniform",
-        "source": "assumption",
-        "note": "assumption: training UAV positions: uniform | center | near_user (center tested in R9/R10, not adopted)"
+        "value": "center",
+        "source": "implementation",
+        "note": "paper Sec. VI: \"the UAV base station is initialized at the area center ... this is the setup to train the GNN model\""
       },
       {
         "key": "gnn.uav_sampling_frac",
-        "value": 0.5,
-        "source": "assumption",
-        "note": "assumption: share drawn around the anchor (ignored for uniform)"
+        "value": 1.0,
+        "source": "implementation",
+        "note": "every training sample has the UAV at the area centre"
       },
       {
         "key": "gnn.uav_sampling_std_m",
-        "value": 40.0,
-        "source": "assumption",
-        "note": "assumption: spread (m) around the anchor"
+        "value": 0.0,
+        "source": "implementation",
+        "note": "exactly at the centre (no spread)"
       },
       {
         "key": "gnn.out_layers",
