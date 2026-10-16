@@ -92,3 +92,18 @@ def test_beamforming_parts_need_the_right_mlps():
     assert mod.needed_mlp_users({"power"}, ev, 8) == {8}
     assert mod.needed_mlp_users({"users"}, ev, 8) == set(ev.sweep_users)
     assert mod.needed_mlp_users({"cdf", "noise"}, ev, 8) == set(ev.cdf_users) | {8}
+
+
+def test_empty_aggregate_only_changes_k1(cfg):
+    model = make_gnn(cfg)
+    h, h_e = batch(cfg, k=4)
+    w_zero = model(h, h_e, 1.0)
+    h1, he1 = batch(cfg, k=1)
+    w1_zero = model(h1, he1, 1.0)
+    model.set_empty_aggregate("self")
+    assert torch.allclose(model(h, h_e, 1.0), w_zero)            # K >= 2: identical
+    assert not torch.allclose(model(h1, he1, 1.0), w1_zero)      # K = 1: rule applies
+    perm = torch.randperm(4)
+    assert torch.allclose(model(h, h_e, 1.0)[:, perm], model(h[:, perm], h_e[:, perm], 1.0), atol=1e-5)
+    with pytest.raises(ValueError):
+        model.set_empty_aggregate("mean")

@@ -55,6 +55,7 @@ class GNNConfig:
     uav_sampling_std_m: float
     out_layers: int
     init_embedding: str
+    empty_aggregate: str
 
 
 @dataclass

@@ -80,7 +80,9 @@ def main() -> None:
                          seed=cfg.seed, device=device, logger=log, tag=f"[mlp K={k}]")
         save_model(model, run.path("ckpt", f"mlp_k{k}.pt"))
         mlps[k] = model
-    evaluator = BeamformingEvaluator(cfg, device, load_model(gnn_path, device), mlps)
+    gnn = load_model(gnn_path, device)
+    gnn.set_empty_aggregate(cfg.gnn.empty_aggregate)        # inference-only rule for K = 1
+    evaluator = BeamformingEvaluator(cfg, device, gnn, mlps)
     metrics: dict = {"gnn_checkpoint": str(gnn_path), "parts": sorted(parts), "mlp": not args.no_mlp}
 
     # ---- Fig. 9: sweeps over K, transmit power and noise power ----

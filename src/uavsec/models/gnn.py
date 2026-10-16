@@ -23,14 +23,18 @@ from torch import nn
 from .base import Beamformer, FeaturePReLU
 
 
-def max_over_others(x: torch.Tensor) -> torch.Tensor:
+EMPTY_AGGREGATE = ("zero", "self")
+
+
+def max_over_others(x: torch.Tensor, empty: str = "zero") -> torch.Tensor:
     """a_k = max_{l != k} x_l along the node axis. x: (B, K, H) -> (B, K, H).
 
-    For K = 1 there are no neighbours and the aggregate is zero.
+    For K = 1 the neighbour set of eq. (16) is empty, which the paper does not define:
+    ``empty="zero"`` returns zeros, ``empty="self"`` returns the node's own message.
     """
     k = x.shape[1]
     if k == 1:
-        return torch.zeros_like(x)
+        return x if empty == "self" else torch.zeros_like(x)
     # Top-2 trick: the max over the others is the overall max, except for the node that
     # holds it, which gets the second largest. O(K) memory instead of O(K^2).
     top, idx = x.topk(2, dim=1)                                 # (B, 2, H)
@@ -49,9 +53,11 @@ class GCNLayer(nn.Module):
             blocks += [nn.Linear(hidden_dim, hidden_dim), FeaturePReLU(hidden_dim)]
         self.f_out = nn.Sequential(*blocks, nn.Linear(hidden_dim, out_dim))
 
+        self.empty_aggregate = "zero"                       # rule for K = 1 (no neighbours)
+
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         m = self.f_gen(z)
-        a = max_over_others(self.f_aggr(m))
+        a = max_over_others(self.f_aggr(m), self.empty_aggregate)
         return self.f_out(torch.cat((m, a), dim=-1))
 
 
@@ -70,6 +76,13 @@ class SecureBeamGNN(Beamformer):
         self.layers = nn.ModuleList(
             GCNLayer(channel_dim + embed_dim, hidden_dim, embed_dim, out_layers) for _ in range(num_layers)
         )
+
+    def set_empty_aggregate(self, mode: str) -> None:
+        """Inference rule for K = 1 (no learned parameters involved; K >= 2 is unaffected)."""
+        if mode not in EMPTY_AGGREGATE:
+            raise ValueError(f"empty_aggregate must be one of {EMPTY_AGGREGATE}, got {mode!r}")
+        for layer in self.layers:
+            layer.empty_aggregate = mode
 
     def initial_embedding(self, x: torch.Tensor) -> torch.Tensor:
         """e_k^(0): zeros, or the MRT direction h_k / ||h_k|| (real and imaginary parts)."""
