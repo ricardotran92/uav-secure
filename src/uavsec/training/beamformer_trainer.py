@@ -42,6 +42,16 @@ def learning_rate(kind: str, cfg: Config) -> float:
 UAV_SAMPLING = ("uniform", "center", "near_user")
 
 
+def make_optimizer(name: str, params, lr: float) -> torch.optim.Optimizer:
+    """The paper says only "stochastic gradient descent" (p. 7): "sgd" is SGD with momentum 0.9,
+    "adam" is the adaptive variant used by default."""
+    if name == "adam":
+        return torch.optim.Adam(params, lr=lr)
+    if name == "sgd":
+        return torch.optim.SGD(params, lr=lr, momentum=0.9)
+    raise ValueError(f"gnn.optimizer must be 'adam' or 'sgd', got {name!r}")
+
+
 def sample_training_batch(sys: SystemConfig, batch: int, num_users: int, gen: torch.Generator,
                           device: torch.device, sampling: str = "uniform", frac: float = 0.0,
                           std_m: float = 0.0) -> tuple[torch.Tensor, torch.Tensor]:
@@ -89,7 +99,7 @@ def train_beamformer(model: Beamformer, cfg: Config, *, num_users: int, epochs: 
     """Train ``model`` in place; on return it holds the weights of the best validation epoch."""
     sys, g = cfg.system, cfg.gnn
     model.to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = make_optimizer(g.optimizer, model.parameters(), lr)
     # The paper gives the learning rate (0.005) but no schedule; "cosine" starts there and decays to 1%.
     scheduler = (torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(1, epochs), eta_min=0.01 * lr)
                  if g.lr_schedule == "cosine" else None)

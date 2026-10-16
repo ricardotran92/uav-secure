@@ -35,6 +35,7 @@ gnn:
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
   lr_schedule: cosine       # assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)
+  optimizer: adam           # assumption: paper says "stochastic gradient descent": adam | sgd (momentum 0.9)
   input_transform: linear   # assumption: channel input scaling, linear | log (log-compressed magnitude, phase kept); also used by the MLP
   uav_sampling: center      # paper Sec. VI: "the UAV base station is initialized at the area center ... this is the setup to train the GNN model"
   uav_sampling_frac: 1.0    # every training sample has the UAV at the area centre

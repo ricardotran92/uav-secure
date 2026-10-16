@@ -107,3 +107,13 @@ def test_empty_aggregate_only_changes_k1(cfg):
     assert torch.allclose(model(h, h_e, 1.0)[:, perm], model(h[:, perm], h_e[:, perm], 1.0), atol=1e-5)
     with pytest.raises(ValueError):
         model.set_empty_aggregate("mean")
+
+
+def test_optimizer_choice():
+    from uavsec.training.beamformer_trainer import make_optimizer
+    params = [torch.nn.Parameter(torch.zeros(2))]
+    assert isinstance(make_optimizer("adam", params, 0.005), torch.optim.Adam)
+    sgd = make_optimizer("sgd", params, 0.005)
+    assert isinstance(sgd, torch.optim.SGD) and sgd.defaults["momentum"] == 0.9
+    with pytest.raises(ValueError):
+        make_optimizer("rmsprop", params, 0.005)

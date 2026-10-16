@@ -49,6 +49,7 @@ class GNNConfig:
     clamp_loss: bool
     grad_clip: float
     lr_schedule: str
+    optimizer: str
     input_transform: str
     uav_sampling: str
     uav_sampling_frac: float
