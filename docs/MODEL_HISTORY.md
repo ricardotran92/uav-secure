@@ -7,6 +7,36 @@ Updated 2026-10-15.
 - **Reference profile:** configs/default.yaml (Table I as printed)  ->  outputs/runs/
 - Current parameters with provenance markers: [PARAMETERS.md](PARAMETERS.md) (machine-readable: [parameters.json](parameters.json)). Source of this history: [history.json](history.json).
 
+## 🏆 Top results
+
+Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4-10, lower = closer to the paper).
+
+| Rank | Snapshot | Score | Status | What | Location |
+|---|---|---|---|---|---|
+| 1 | R7+swap | **0.145** | 🔬 ablation | R7 with the swapped U5/U6 pairing (deployment-only ablation, C21) | `outputs/tune_v4/C1_swap/` |
+| 2 | **R11** | **0.154** | ⭐ current | R7 + GNN trained with the UAV at the area centre (paper setup) | `outputs/runs_calibrated/` |
+| 3 | R7 | **0.157** | 📦 archived | Calibrated channel + GNN 512/cosine + tuned SAC | `outputs/archive_r7/runs_calibrated/` |
+| 4 | R10 | **0.163** | ✖ rejected | R7 + swap + 50% centre-biased training | `outputs/archive_r10/runs_calibrated/` |
+| 5 | R9 | **0.167** | ✖ rejected | R7 + swap + 80% centre-biased training + MRT init | `outputs/archive_r9/runs_calibrated/` |
+| 6 | R8 | **2.301** | 📏 reference | Table I as printed (log10, 3-D distance), R7 settings | `outputs/archive_r7/runs/` |
+
+**Best snapshot per figure** (excluding the Table I reference):
+
+| Figure | Best | Error | Current (R11) |
+|---|---|---|---|
+| fig4 | **R11** | 0.087 | 0.087 |
+| fig5 | R9 | 0.191 | 0.217 |
+| fig6 | **R11** | 0.003 | 0.003 |
+| fig7_optimum | R7+swap | 0.057 | 0.312 |
+| fig7_sac | R7+swap | 0.060 | 0.242 |
+| fig8 | R10 | 0.153 | 0.156 |
+| fig9a | R7 | 0.055 | 0.062 |
+| fig9b | **R11** | 0.327 | 0.327 |
+| fig9c | **R11** | 0.086 | 0.086 |
+| fig10 | R9 | 0.036 | 0.037 |
+
+- R7+swap: Not a full run: Figs. 4/5/9/10 copied from R7 (they do not depend on the pairing). The user keeps the original pairing.
+
 ## ⭐ Highlights: paper vs ours (snapshot R11, current best)
 
 **6 match · 6 close · 3 gap.** Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Paper-match score (lower is better): R11 0.154 (current), R7 0.157, R10 0.163, R9 0.167, Table I as printed 2.3-2.4.

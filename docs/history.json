@@ -1305,5 +1305,74 @@
         "status": "gap"
       }
     ]
-  }
+  },
+  "leaderboard": [
+    {
+      "id": "R11",
+      "label": "R7 + GNN trained with the UAV at the area centre (paper setup)",
+      "status": "current",
+      "total": 0.154,
+      "location": "outputs/runs_calibrated/"
+    },
+    {
+      "id": "R7+swap",
+      "label": "R7 with the swapped U5/U6 pairing (deployment-only ablation, C21)",
+      "status": "ablation",
+      "total": 0.145,
+      "scorecard": {
+        "fig4": 0.319,
+        "fig5": 0.3,
+        "fig6": 0.05,
+        "fig7_optimum": 0.057,
+        "fig7_sac": 0.06,
+        "fig8": 0.177,
+        "fig9a": 0.055,
+        "fig9b": 0.359,
+        "fig9c": 0.093,
+        "fig10": 0.046
+      },
+      "location": "outputs/tune_v4/C1_swap/",
+      "note": "Not a full run: Figs. 4/5/9/10 copied from R7 (they do not depend on the pairing). The user keeps the original pairing."
+    },
+    {
+      "id": "R7",
+      "label": "Calibrated channel + GNN 512/cosine + tuned SAC",
+      "status": "archived",
+      "total": 0.157,
+      "location": "outputs/archive_r7/runs_calibrated/"
+    },
+    {
+      "id": "R10",
+      "label": "R7 + swap + 50% centre-biased training",
+      "status": "rejected",
+      "total": 0.163,
+      "location": "outputs/archive_r10/runs_calibrated/"
+    },
+    {
+      "id": "R9",
+      "label": "R7 + swap + 80% centre-biased training + MRT init",
+      "status": "rejected",
+      "total": 0.167,
+      "location": "outputs/archive_r9/runs_calibrated/"
+    },
+    {
+      "id": "R8",
+      "label": "Table I as printed (log10, 3-D distance), R7 settings",
+      "status": "reference",
+      "total": 2.301,
+      "scorecard": {
+        "fig4": 0.419,
+        "fig5": 0.541,
+        "fig6": 0.648,
+        "fig7_optimum": 0.609,
+        "fig7_sac": 1.486,
+        "fig8": 0.41,
+        "fig9a": 2.872,
+        "fig9b": 7.595,
+        "fig9c": 3.714,
+        "fig10": 2.578
+      },
+      "location": "outputs/archive_r7/runs/"
+    }
+  ]
 }

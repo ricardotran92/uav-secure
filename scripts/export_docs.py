@@ -131,6 +131,41 @@ def parameters_md(profiles: dict[str, list[dict]], knobs: list[dict]) -> str:
 STATUS = {"match": "✅ match", "close": "🟡 close", "gap": "⚠️ gap"}
 
 
+FIGURE_ORDER = ("fig4", "fig5", "fig6", "fig7_optimum", "fig7_sac", "fig8", "fig9a", "fig9b", "fig9c", "fig10")
+LB_STATUS = {"current": "⭐ current", "ablation": "🔬 ablation", "archived": "📦 archived",
+             "rejected": "✖ rejected", "reference": "📏 reference"}
+
+
+def top_results_md(h: dict) -> list[str]:
+    """Leaderboard of scored snapshots and the best snapshot per figure."""
+    board = h.get("leaderboard")
+    if not board:
+        return []
+    snaps = {s["id"]: s for s in h["results_snapshots"]}
+    cards = {e["id"]: e.get("scorecard") or snaps.get(e["id"], {}).get("scorecard") for e in board}
+    out = ["## 🏆 Top results", "",
+           "Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4-10, lower = closer "
+           "to the paper).", "", "| Rank | Snapshot | Score | Status | What | Location |", "|---|---|---|---|---|---|"]
+    for rank, e in enumerate(sorted(board, key=lambda e: e["total"]), 1):
+        name = f"**{e['id']}**" if e["status"] == "current" else e["id"]
+        out.append(f"| {rank} | {name} | **{e['total']:.3f}** | {LB_STATUS[e['status']]} | {esc(e['label'])} | "
+                   f"`{e['location']}` |")
+    current = next(e["id"] for e in board if e["status"] == "current")
+    out += ["", "**Best snapshot per figure** (excluding the Table I reference):", "",
+            "| Figure | Best | Error | Current (" + current + ") |", "|---|---|---|---|"]
+    for fig in FIGURE_ORDER:
+        scored = [(c[fig], sid) for sid, c in cards.items() if c and fig in c and sid != "R8"]
+        if not scored:
+            continue
+        err, sid = min(scored)
+        cur = cards.get(current, {}).get(fig)
+        best = f"**{sid}**" if sid == current else sid
+        out.append(f"| {fig} | {best} | {err:.3f} | {cur:.3f} |" if cur is not None else f"| {fig} | {best} | {err:.3f} | - |")
+    notes = [e for e in board if e.get("note")]
+    out += [""] + [f"- {e['id']}: {e['note']}" for e in notes] + [""]
+    return out
+
+
 def highlights_md(h: dict) -> list[str]:
     """'Paper vs ours' table for the current best snapshot, shown right under the title."""
     hl = h.get("highlights")
@@ -153,6 +188,7 @@ def history_md(h: dict, main: list[dict]) -> str:
            f"- **Reference profile:** {h['meta']['reference_profile']}",
            "- Current parameters with provenance markers: [PARAMETERS.md](PARAMETERS.md) (machine-readable: "
            "[parameters.json](parameters.json)). Source of this history: [history.json](history.json).", ""]
+    out += top_results_md(h)
     out += highlights_md(h)
     out += ["## 1. Architecture", "", "| Block | What it does | Paper |", "|---|---|---|"]
     out += [f"| **{b['block']}** | {esc(b['description'])} | {esc(b['paper'])} |" for b in h["architecture"]]
