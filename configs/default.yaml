@@ -30,7 +30,7 @@ gnn:
   lr: 0.005
   epochs: 300               # "GNN train episodes"
   batch_size: 512
-  batches_per_epoch: 50     # assumption: fresh mini-batches per epoch
+  batches_per_epoch: 150    # assumption: fresh mini-batches of 512 per episode (paper: 300 episodes, batch 512; per-episode count unpublished)
   val_samples: 2048         # assumption: fixed validation set
   clamp_loss: true          # use (.)^+ in the loss as in eq. (22)
   grad_clip: 1.0            # assumption: gradient-norm clipping (training diverged without it)
@@ -61,7 +61,7 @@ sac:
   topology_seed: 2025       # fixed user/eavesdropper layout for the run
   layout_file: configs/layouts/paper_fig7.yaml  # fixed layout of Fig. 7 (swapped U5/U6 pairing tested in R9/R10, not adopted); "" = random layout
   obs_transform: log        # assumption: channel part of the state as sign(x) log(1 + |x|) (linear | log)
-  reward_scale: 0.1         # assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec
+  reward_scale: 1.0         # paper: reward = R_sec, no scaling mentioned
   eval_every_episodes: 10   # assumption: deterministic evaluation interval; the best policy is kept
   eval_episodes: 3          # assumption: deterministic episodes averaged per evaluation
   gradient_steps: 2         # assumption: SAC gradient updates per environment step
@@ -73,9 +73,9 @@ opt:                        # gradient multi-start proxy for the optimizer of [4
 
 eval:
   test_samples: 256         # instances per sweep point
-  fading_samples: 32        # small-scale fading draws for position evaluation
+  fading_samples: 128       # small-scale fading draws per position (exhaustive search precision on a flat top)
   grid_step_m: 2.0          # exhaustive deployment search resolution
-  search_refine_top: 25     # best grid points re-scored with 8x more fading draws
+  search_refine_top: 100    # best grid points re-scored with 8x more fading draws
   search_beamformer: gnn    # beamformer in the exhaustive deployment search: gnn (problem (23)-(25), W = GNN output, eq. (24)) | opt
   search_opt_restarts: 4    # OPT budget per grid point (smaller than the benchmark OPT: ~1e4 points)
   search_opt_iters: 150
