@@ -191,9 +191,9 @@
       },
       {
         "key": "gnn.batches_per_epoch",
-        "value": 50,
+        "value": 150,
         "source": "assumption",
-        "note": "assumption: fresh mini-batches per epoch"
+        "note": "assumption: fresh mini-batches of 512 per episode (paper: 300 episodes, batch 512; per-episode count unpublished)"
       },
       {
         "key": "gnn.val_samples",
@@ -254,6 +254,12 @@
         "value": "zeros",
         "source": "assumption",
         "note": "assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)"
+      },
+      {
+        "key": "gnn.empty_aggregate",
+        "value": "zero",
+        "source": "assumption",
+        "note": "assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self"
       },
       {
         "key": "mlp.hidden_dims",
@@ -364,9 +370,9 @@
       },
       {
         "key": "sac.reward_scale",
-        "value": 0.1,
-        "source": "assumption",
-        "note": "assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec"
+        "value": 1.0,
+        "source": "implementation",
+        "note": "paper: reward = R_sec, no scaling mentioned"
       },
       {
         "key": "sac.eval_every_episodes",
@@ -412,9 +418,9 @@
       },
       {
         "key": "eval.fading_samples",
-        "value": 32,
+        "value": 128,
         "source": "implementation",
-        "note": "small-scale fading draws for position evaluation"
+        "note": "small-scale fading draws per position (exhaustive search precision on a flat top)"
       },
       {
         "key": "eval.grid_step_m",
@@ -424,7 +430,7 @@
       },
       {
         "key": "eval.search_refine_top",
-        "value": 25,
+        "value": 100,
         "source": "implementation",
         "note": "best grid points re-scored with 8x more fading draws"
       },
@@ -730,9 +736,9 @@
       },
       {
         "key": "gnn.batches_per_epoch",
-        "value": 50,
+        "value": 150,
         "source": "assumption",
-        "note": "assumption: fresh mini-batches per epoch"
+        "note": "assumption: fresh mini-batches of 512 per episode (paper: 300 episodes, batch 512; per-episode count unpublished)"
       },
       {
         "key": "gnn.val_samples",
@@ -793,6 +799,12 @@
         "value": "zeros",
         "source": "assumption",
         "note": "assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)"
+      },
+      {
+        "key": "gnn.empty_aggregate",
+        "value": "zero",
+        "source": "assumption",
+        "note": "assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self"
       },
       {
         "key": "mlp.hidden_dims",
@@ -903,9 +915,9 @@
       },
       {
         "key": "sac.reward_scale",
-        "value": 0.1,
-        "source": "assumption",
-        "note": "assumption: SAC trains on 0.1 x R_sec; logs and figures use the unscaled R_sec"
+        "value": 1.0,
+        "source": "implementation",
+        "note": "paper: reward = R_sec, no scaling mentioned"
       },
       {
         "key": "sac.eval_every_episodes",
@@ -951,9 +963,9 @@
       },
       {
         "key": "eval.fading_samples",
-        "value": 32,
+        "value": 128,
         "source": "implementation",
-        "note": "small-scale fading draws for position evaluation"
+        "note": "small-scale fading draws per position (exhaustive search precision on a flat top)"
       },
       {
         "key": "eval.grid_step_m",
@@ -963,7 +975,7 @@
       },
       {
         "key": "eval.search_refine_top",
-        "value": 25,
+        "value": 100,
         "source": "implementation",
         "note": "best grid points re-scored with 8x more fading draws"
       },
