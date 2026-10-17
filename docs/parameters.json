@@ -139,7 +139,7 @@
       },
       {
         "key": "system.min_distance_m",
-        "value": 20.0,
+        "value": 30.0,
         "source": "calibrated",
         "note": "assumption: path-loss distance is clamped below at this value",
         "default_value": 1.0
@@ -218,6 +218,12 @@
         "value": "cosine",
         "source": "assumption",
         "note": "assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)"
+      },
+      {
+        "key": "gnn.optimizer",
+        "value": "adam",
+        "source": "assumption",
+        "note": "assumption: paper says \"stochastic gradient descent\": adam | sgd (momentum 0.9)"
       },
       {
         "key": "gnn.input_transform",
@@ -763,6 +769,12 @@
         "value": "cosine",
         "source": "assumption",
         "note": "assumption: starts at the Table I lr 0.005, decays to 1% (paper gives no schedule)"
+      },
+      {
+        "key": "gnn.optimizer",
+        "value": "adam",
+        "source": "assumption",
+        "note": "assumption: paper says \"stochastic gradient descent\": adam | sgd (momentum 0.9)"
       },
       {
         "key": "gnn.input_transform",

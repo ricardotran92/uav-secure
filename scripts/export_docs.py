@@ -133,7 +133,7 @@ STATUS = {"match": "✅ match", "close": "🟡 close", "gap": "⚠️ gap"}
 
 FIGURE_ORDER = ("fig4", "fig5", "fig6", "fig7_optimum", "fig7_sac", "fig8", "fig9a", "fig9b", "fig9c", "fig10")
 LB_STATUS = {"current": "⭐ current", "ablation": "🔬 ablation", "archived": "📦 archived",
-             "rejected": "✖ rejected", "reference": "📏 reference"}
+             "rejected": "✖ rejected", "reference": "📏 reference", "alternative": "🔁 alternative"}
 
 
 def top_results_md(h: dict) -> list[str]:
