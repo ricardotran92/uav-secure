@@ -111,7 +111,7 @@ Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4
 **Main-profile results:**
 
 - GNN 10.95 +- 0.07 vs MLP 8.19 +- 0.05 bps/Hz (validation).
-- K=8, 1 W: GNN 13.5 / OPT 14.98 / MLP 8.8 bps/Hz (GNN = 90% of OPT).
+- K=8, 1 W: GNN 13.5 / OPT 14.98 / MLP 9.63 bps/Hz (GNN = 90% of OPT).
 - Fig. 7 optimum (62, 142) vs paper (56, 140): **6.3 m**; SAC ends 3.3 m from the optimum.
 - Graph-DRL reaches 98.8% of the optimum, +24% over the best heuristic.
 
@@ -1109,7 +1109,7 @@ Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4
   "beamforming_K8_1W": {
     "GNN": 13.5,
     "OPT": 14.98,
-    "MLP": 8.8
+    "MLP": 9.63
   },
   "gnn_over_opt": {
     "K=1": 0.69,
