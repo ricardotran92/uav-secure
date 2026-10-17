@@ -14,4 +14,4 @@ system:
   path_loss_log: ln
   distance_model: horizontal
   array_axis: x
-  min_distance_m: 20.0   # do not extrapolate 30 + 22 ln(d) below 20 m horizontal distance (else up to ~99 dB SNR right above a user)
+  min_distance_m: 30.0   # do not extrapolate 30 + 22 ln(d) below 30 m horizontal distance (R13: 20 -> 30 m, score 0.153 -> 0.109)
