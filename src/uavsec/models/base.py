@@ -18,19 +18,24 @@ class Beamformer(nn.Module):
 
     ``ref_snr`` (see ``channel.reference_snr``) is a fixed input scale: features are
     sqrt(P / ref_snr) * h, which is O(1) at the training setting and still tracks
-    changes in transmit or noise power at test time.
+    changes in transmit or noise power at test time. With ``input_power`` set, the
+    features use that fixed power instead of P (the input no longer depends on the
+    test power, which then enters only through the power normalisation of W).
     """
 
     def __init__(self, num_antennas: int, ref_snr: float, input_transform: str = "linear",
-                 **hparams: Any) -> None:
+                 input_power: float | None = None, **hparams: Any) -> None:
         super().__init__()
         if input_transform not in INPUT_TRANSFORMS:
             raise ValueError(f"input_transform must be one of {INPUT_TRANSFORMS}, got {input_transform!r}")
         self.num_antennas = num_antennas
         self.ref_snr = ref_snr
         self.input_transform = input_transform
+        self.input_power = input_power
         self.hparams = {"num_antennas": num_antennas, "ref_snr": ref_snr,
                         "input_transform": input_transform, **hparams}
+        if input_power is not None:
+            self.hparams["input_power"] = input_power
 
     def _scale(self, h: torch.Tensor, power: float | torch.Tensor) -> torch.Tensor:
         """sqrt(P / SNR_ref) * h, optionally with log-compressed magnitude (phase unchanged).
@@ -38,6 +43,8 @@ class Beamformer(nn.Module):
         "log" maps |h| -> log(1 + |h|): needed when the channel gain spans many decades,
         e.g. with a horizontal-distance path loss where the UAV can hover right above a node.
         """
+        if self.input_power is not None:
+            power = self.input_power
         scale = torch.sqrt(torch.as_tensor(power, dtype=torch.float32, device=h.device) / self.ref_snr)
         h = h * scale.reshape(-1, 1, 1)
         if self.input_transform == "log":

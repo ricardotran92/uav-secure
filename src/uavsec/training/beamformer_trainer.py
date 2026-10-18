@@ -24,10 +24,13 @@ def build_model(kind: str, cfg: Config, num_users: int | None = None) -> Beamfor
     """Create a GNN or MLP beamformer from the config (``num_users`` only matters for the MLP)."""
     sys = cfg.system
     if kind == "gnn":
-        model = SecureBeamGNN(sys.num_antennas, reference_snr(sys), hidden_dim=cfg.gnn.hidden_dim,
-                              num_layers=cfg.gnn.num_layers, input_transform=cfg.gnn.input_transform,
-                              out_layers=cfg.gnn.out_layers, init_embedding=cfg.gnn.init_embedding)
-        model.set_empty_aggregate(cfg.gnn.empty_aggregate)
+        g = cfg.gnn
+        model = SecureBeamGNN(sys.num_antennas, reference_snr(sys), hidden_dim=g.hidden_dim,
+                              num_layers=g.num_layers, input_transform=g.input_transform,
+                              out_layers=g.out_layers, init_embedding=g.init_embedding,
+                              aggregate_self=g.aggregate_self, layer_norm=g.layer_norm, residual=g.residual,
+                              input_power=None if g.input_power_scaling else sys.power_max_w)
+        model.set_empty_aggregate(g.empty_aggregate)
         return model
     if kind == "mlp":
         return MLPBeamformer(sys.num_antennas, reference_snr(sys), num_users=num_users or sys.num_users,

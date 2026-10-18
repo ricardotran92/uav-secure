@@ -43,6 +43,10 @@ gnn:
   out_layers: 2             # assumption: depth of the f_out MLP in each GCN layer (eq. (18))
   init_embedding: zeros     # assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
   empty_aggregate: zero     # assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self
+  aggregate_self: false     # assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)
+  input_power_scaling: true # assumption: node features scaled by sqrt(P) at the test power (true) or fixed at P^max (false)
+  layer_norm: none          # assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer
+  residual: false           # assumption: e_k <- e_k + f_out(c_k) across GCN layers
 
 mlp:
   hidden_dims: [512, 512, 512]   # assumption

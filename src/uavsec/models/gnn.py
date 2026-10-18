@@ -8,6 +8,7 @@ Each GCN layer d performs
     z_k   = [Re h_k, Im h_k, Re h_E,k, Im h_E,k, Re e_k, Im e_k]      (13)
     m_k   = f_gen(z_k)                                                (14)
     a_k   = max_{l != k} f_aggr(m_l)                                  (16)
+            (optionally max over N(k) u {k}, ``aggregate_self``)
     c_k   = [m_k, a_k]                                                (17)
     e_k   = f_out(c_k)                                                (18)
 and the final embeddings are mapped to beamformers by eq. (19).
@@ -24,6 +25,7 @@ from .base import Beamformer, FeaturePReLU
 
 
 EMPTY_AGGREGATE = ("zero", "self")
+LAYER_NORMS = ("none", "layer")
 
 
 def max_over_others(x: torch.Tensor, empty: str = "zero") -> torch.Tensor:
@@ -42,22 +44,35 @@ def max_over_others(x: torch.Tensor, empty: str = "zero") -> torch.Tensor:
     return torch.where(node == idx[:, :1], top[:, 1:2], top[:, :1])
 
 
+def max_over_all(x: torch.Tensor) -> torch.Tensor:
+    """a_k = max_{l in N(k) u {k}} x_l: the aggregate includes the node itself (defined for K = 1)."""
+    return x.max(dim=1, keepdim=True).values.expand_as(x)
+
+
+def _act(dim: int, norm: str) -> list[nn.Module]:
+    """PReLU, optionally preceded by a LayerNorm (the "Normalization" block of Fig. 2)."""
+    return ([nn.LayerNorm(dim)] if norm == "layer" else []) + [FeaturePReLU(dim)]
+
+
 class GCNLayer(nn.Module):
-    def __init__(self, in_dim: int, hidden_dim: int, out_dim: int, out_layers: int = 2) -> None:
+    def __init__(self, in_dim: int, hidden_dim: int, out_dim: int, out_layers: int = 2,
+                 aggregate_self: bool = False, layer_norm: str = "none") -> None:
         super().__init__()
-        self.f_gen = nn.Sequential(nn.Linear(in_dim, hidden_dim), FeaturePReLU(hidden_dim))
+        self.f_gen = nn.Sequential(nn.Linear(in_dim, hidden_dim), *_act(hidden_dim, layer_norm))
         self.f_aggr = nn.Sequential(nn.Linear(hidden_dim, hidden_dim), FeaturePReLU(hidden_dim))
         # f_out is "a multilayer perceptron" (eq. (18)); its depth is not given in the paper.
-        blocks: list[nn.Module] = [nn.Linear(2 * hidden_dim, hidden_dim), FeaturePReLU(hidden_dim)]
+        blocks: list[nn.Module] = [nn.Linear(2 * hidden_dim, hidden_dim), *_act(hidden_dim, layer_norm)]
         for _ in range(out_layers - 2):
-            blocks += [nn.Linear(hidden_dim, hidden_dim), FeaturePReLU(hidden_dim)]
+            blocks += [nn.Linear(hidden_dim, hidden_dim), *_act(hidden_dim, layer_norm)]
         self.f_out = nn.Sequential(*blocks, nn.Linear(hidden_dim, out_dim))
 
+        self.aggregate_self = aggregate_self                # max over N(k) u {k} instead of N(k)
         self.empty_aggregate = "zero"                       # rule for K = 1 (no neighbours)
 
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         m = self.f_gen(z)
-        a = max_over_others(self.f_aggr(m), self.empty_aggregate)
+        msg = self.f_aggr(m)
+        a = max_over_all(msg) if self.aggregate_self else max_over_others(msg, self.empty_aggregate)
         return self.f_out(torch.cat((m, a), dim=-1))
 
 
@@ -65,16 +80,23 @@ class SecureBeamGNN(Beamformer):
     KIND = "gnn"
 
     def __init__(self, num_antennas: int, ref_snr: float, hidden_dim: int, num_layers: int,
-                 input_transform: str = "linear", out_layers: int = 2, init_embedding: str = "zeros") -> None:
+                 input_transform: str = "linear", out_layers: int = 2, init_embedding: str = "zeros",
+                 aggregate_self: bool = False, layer_norm: str = "none", residual: bool = False,
+                 input_power: float | None = None) -> None:
         if init_embedding not in ("zeros", "mrt"):
             raise ValueError(f"init_embedding must be 'zeros' or 'mrt', got {init_embedding!r}")
-        super().__init__(num_antennas, ref_snr, input_transform, hidden_dim=hidden_dim, num_layers=num_layers,
-                         out_layers=out_layers, init_embedding=init_embedding)
+        if layer_norm not in LAYER_NORMS:
+            raise ValueError(f"layer_norm must be one of {LAYER_NORMS}, got {layer_norm!r}")
+        super().__init__(num_antennas, ref_snr, input_transform, input_power=input_power, hidden_dim=hidden_dim,
+                         num_layers=num_layers, out_layers=out_layers, init_embedding=init_embedding,
+                         aggregate_self=aggregate_self, layer_norm=layer_norm, residual=residual)
         channel_dim, embed_dim = 4 * num_antennas, 2 * num_antennas
         self.embed_dim = embed_dim
         self.init_embedding = init_embedding
+        self.residual = residual
         self.layers = nn.ModuleList(
-            GCNLayer(channel_dim + embed_dim, hidden_dim, embed_dim, out_layers) for _ in range(num_layers)
+            GCNLayer(channel_dim + embed_dim, hidden_dim, embed_dim, out_layers, aggregate_self, layer_norm)
+            for _ in range(num_layers)
         )
 
     def set_empty_aggregate(self, mode: str) -> None:
@@ -95,5 +117,6 @@ class SecureBeamGNN(Beamformer):
         # Channel part of the node feature is preserved across layers; only e_k is updated.
         e = self.initial_embedding(x)
         for layer in self.layers:
-            e = layer(torch.cat((x, e), dim=-1))
+            out = layer(torch.cat((x, e), dim=-1))
+            e = e + out if self.residual else out
         return e

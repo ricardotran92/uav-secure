@@ -5,7 +5,7 @@ import torch
 from uavsec.channel import area_center, channels, reference_snr, sample_scenario
 from uavsec.config import DEFAULT_CONFIG, load_config
 from uavsec.models import MLPBeamformer, SecureBeamGNN, load_model, save_model
-from uavsec.models.gnn import max_over_others
+from uavsec.models.gnn import max_over_all, max_over_others
 from uavsec.utils import make_generator
 
 DEVICE = torch.device("cpu")
@@ -117,3 +117,45 @@ def test_optimizer_choice():
     assert isinstance(sgd, torch.optim.SGD) and sgd.defaults["momentum"] == 0.9
     with pytest.raises(ValueError):
         make_optimizer("rmsprop", params, 0.005)
+
+
+def test_max_over_all():
+    x = torch.tensor([[[1.0], [5.0], [3.0]]])
+    assert max_over_all(x).flatten().tolist() == [5.0, 5.0, 5.0]
+    assert torch.equal(max_over_all(x[:, :1]), x[:, :1])
+
+
+ARCH_OPTIONS = [{"aggregate_self": True}, {"layer_norm": "layer"}, {"residual": True},
+                {"input_power": 1.0}, {"aggregate_self": True, "layer_norm": "layer", "residual": True}]
+
+
+@pytest.mark.parametrize("opts", ARCH_OPTIONS)
+def test_gnn_options_equivariant_and_roundtrip(cfg, tmp_path, opts):
+    torch.manual_seed(0)
+    model = SecureBeamGNN(cfg.system.num_antennas, reference_snr(cfg.system), hidden_dim=16, num_layers=2,
+                          **opts).eval()
+    h, h_e = batch(cfg, k=5)
+    perm = torch.randperm(5)
+    assert torch.allclose(model(h, h_e, 1.0)[:, perm], model(h[:, perm], h_e[:, perm], 1.0), atol=1e-5)
+    save_model(model, tmp_path / "m.pt")
+    assert torch.allclose(model(h, h_e, 1.0), load_model(tmp_path / "m.pt")(h, h_e, 1.0))
+
+
+def test_aggregate_self_uses_own_message_at_k1(cfg):
+    torch.manual_seed(0)
+    model = SecureBeamGNN(cfg.system.num_antennas, reference_snr(cfg.system), hidden_dim=16, num_layers=2,
+                          aggregate_self=True)
+    h1, he1 = batch(cfg, k=1)
+    w = model(h1, he1, 1.0)
+    for layer in model.layers:
+        layer.aggregate_self = False                     # falls back to the zero aggregate of eq. (16)
+    assert not torch.allclose(model(h1, he1, 1.0), w)
+
+
+def test_fixed_input_power_ignores_test_power(cfg):
+    torch.manual_seed(0)
+    model = SecureBeamGNN(cfg.system.num_antennas, reference_snr(cfg.system), hidden_dim=16, num_layers=2,
+                          input_power=1.0)
+    h, h_e = batch(cfg, k=3)
+    w1, w100 = model(h, h_e, 1.0), model(h, h_e, 100.0)
+    assert torch.allclose(w100, 10.0 * w1, atol=1e-5)      # same direction, power normalised to P

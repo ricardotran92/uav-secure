@@ -57,6 +57,10 @@ class GNNConfig:
     out_layers: int
     init_embedding: str
     empty_aggregate: str
+    aggregate_self: bool
+    input_power_scaling: bool
+    layer_norm: str
+    residual: bool
 
 
 @dataclass
