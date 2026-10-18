@@ -268,6 +268,30 @@
         "note": "assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self"
       },
       {
+        "key": "gnn.aggregate_self",
+        "value": false,
+        "source": "assumption",
+        "note": "assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)"
+      },
+      {
+        "key": "gnn.input_power_scaling",
+        "value": false,
+        "source": "assumption",
+        "note": "assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14)"
+      },
+      {
+        "key": "gnn.layer_norm",
+        "value": "layer",
+        "source": "assumption",
+        "note": "assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer (R14)"
+      },
+      {
+        "key": "gnn.residual",
+        "value": true,
+        "source": "assumption",
+        "note": "assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps)"
+      },
+      {
         "key": "mlp.hidden_dims",
         "value": [
           512,
@@ -817,6 +841,30 @@
         "value": "zero",
         "source": "assumption",
         "note": "assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self"
+      },
+      {
+        "key": "gnn.aggregate_self",
+        "value": false,
+        "source": "assumption",
+        "note": "assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)"
+      },
+      {
+        "key": "gnn.input_power_scaling",
+        "value": false,
+        "source": "assumption",
+        "note": "assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14)"
+      },
+      {
+        "key": "gnn.layer_norm",
+        "value": "layer",
+        "source": "assumption",
+        "note": "assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer (R14)"
+      },
+      {
+        "key": "gnn.residual",
+        "value": true,
+        "source": "assumption",
+        "note": "assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps)"
       },
       {
         "key": "mlp.hidden_dims",
@@ -1379,6 +1427,56 @@
         {
           "value": 0.5,
           "outcome": "no gain"
+        }
+      ]
+    },
+    {
+      "key": "gnn.layer_norm / gnn.residual",
+      "why": "Normalization block of Fig. 2; depth of the GCN stack.",
+      "tested": [
+        {
+          "value": "none / false",
+          "outcome": "R13"
+        },
+        {
+          "value": "layer / false",
+          "outcome": "K = 1 drops"
+        },
+        {
+          "value": "none / true",
+          "outcome": "worse (0.79 x OPT)"
+        },
+        {
+          "value": "layer / true",
+          "outcome": "chosen (0.93 x OPT at K = 8, K = 1 drops)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.input_power_scaling",
+      "why": "Whether the GNN input depends on the test power (eq. (12)).",
+      "tested": [
+        {
+          "value": true,
+          "outcome": "R13"
+        },
+        {
+          "value": false,
+          "outcome": "chosen (Fig. 9b error halved)"
+        }
+      ]
+    },
+    {
+      "key": "gnn.aggregate_self",
+      "why": "Aggregate defined at K = 1.",
+      "tested": [
+        {
+          "value": false,
+          "outcome": "chosen"
+        },
+        {
+          "value": true,
+          "outcome": "worse"
         }
       ]
     }
