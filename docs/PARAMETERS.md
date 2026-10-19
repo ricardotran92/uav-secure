@@ -33,7 +33,7 @@ Main profile: 20 paper values, 4 calibrated, 27 assumptions, 30 implementation s
 | 🟡 | **`gnn.empty_aggregate`** | **`zero`** | assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero \| self |  |
 | 🟡 | **`gnn.aggregate_self`** | **`False`** | assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1) |  |
 | 🟡 | **`gnn.input_power_scaling`** | **`False`** | assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14) |  |
-| 🟡 | **`gnn.layer_norm`** | **`layer`** | assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none \| layer (R14) |  |
+| 🟡 | **`gnn.layer_norm`** | **`layer`** | assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none \| layer \| out (f_out only) (R14) |  |
 | 🟡 | **`gnn.residual`** | **`True`** | assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps) |  |
 | 🟡 | **`mlp.hidden_dims`** | **`[512, 512, 512]`** | assumption |  |
 | 🟡 | **`mlp.lr`** | **`0.001`** | assumption (0.005 diverges for the wider MLP) |  |

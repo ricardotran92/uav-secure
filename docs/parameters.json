@@ -283,7 +283,7 @@
         "key": "gnn.layer_norm",
         "value": "layer",
         "source": "assumption",
-        "note": "assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer (R14)"
+        "note": "assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer | out (f_out only) (R14)"
       },
       {
         "key": "gnn.residual",
@@ -858,7 +858,7 @@
         "key": "gnn.layer_norm",
         "value": "layer",
         "source": "assumption",
-        "note": "assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer (R14)"
+        "note": "assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer | out (f_out only) (R14)"
       },
       {
         "key": "gnn.residual",

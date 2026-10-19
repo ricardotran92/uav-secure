@@ -43,6 +43,22 @@ Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4
 - R13b: Tied with R13 within noise; better on Figs. 4/6/8/10 and on the Graph-DRL gain (+33%), worse on Figs. 5/9b.
 - R7+swap: Not a full run: Figs. 4/5/9/10 copied from R7 (they do not depend on the pairing). The user keeps the original pairing. Measured on R7; not re-measured on R12.
 
+## 🔬 Screening experiments (top results)
+
+GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each, means; Fig. 7 = median). Errors use the scorecard formula on the GNN curves of Fig. 9a/9b only (lower = closer to the paper); the best value of each column is bold. The full-run score of a snapshot is in the table above.
+
+| Rank | Round | Variant | Changes | 9a+9b error | 9a error | 9b error | GNN/OPT K=8 | GNN K=8 | GNN K=1 | GNN 40 dBm | Fig. 7 (m) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 🥇 1 | R14 | s4a_lnres_fixedpower | C37+C40 (= R14) | **0.169** | **0.105** | **0.065** | **0.93** | **13.96** | 1.31 | **20.9** | **6.3** |
+| 🥈 2 | R14 | s4b_lnres_fixedpower_self | C37+C40, K=1 self rule (C41) | 0.179 | 0.114 | **0.065** | **0.93** | **13.96** | 0.91 | **20.9** | **6.3** |
+| 🥉 3 | R14 | s2_fixedpower | C37 power-independent input | 0.190 | 0.106 | 0.084 | 0.90 | 13.47 | 2.49 | 19.6 | **6.3** |
+| 4 | R14 | base | R13 settings | 0.274 | 0.106 | 0.169 | 0.90 | 13.47 | 2.49 | 20.2 | **6.3** |
+| 5 | R14 | s1_aggself | C36 aggregate N(k)+self | 0.275 | 0.115 | 0.160 | 0.88 | 13.21 | **2.49** | 19.5 | 8.0 |
+| 6 | R14 | s3c_lnres | C40 LayerNorm+residual | 0.278 | **0.105** | 0.173 | **0.93** | **13.96** | 1.31 | 20.6 | **6.3** |
+| 7 | R14 | s3a_ln | C38 LayerNorm | 0.291 | 0.120 | 0.171 | 0.91 | 13.58 | 1.40 | 20.0 | **6.3** |
+| 8 | R14 | s3b_res | C39 residual | 0.441 | 0.248 | 0.193 | 0.79 | 11.75 | 1.65 | 16.7 | 7.2 |
+| | | **paper** | | 0.000 | 0.000 | 0.000 | 0.95 | 14.79 | 3.86 | 23.8 | 0.0 |
+
 ## ⭐ Highlights: paper vs ours (snapshot R14, current best)
 
 **8 match · 4 close · 2 gap.** Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Score: R14 0.097, R14-S2 0.105, R13 0.109, R13b 0.110, R12 0.153, R11 0.154, R7 0.157.
@@ -100,7 +116,7 @@ Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4
 - 🟡 `gnn.empty_aggregate` = **`zero`** - assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self
 - 🟡 `gnn.aggregate_self` = **`False`** - assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)
 - 🟡 `gnn.input_power_scaling` = **`False`** - assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14)
-- 🟡 `gnn.layer_norm` = **`layer`** - assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer (R14)
+- 🟡 `gnn.layer_norm` = **`layer`** - assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer | out (f_out only) (R14)
 - 🟡 `gnn.residual` = **`True`** - assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps)
 - 🟡 `mlp.hidden_dims` = **`[512, 512, 512]`** - assumption
 - 🟡 `mlp.lr` = **`0.001`** - assumption (0.005 diverges for the wider MLP)

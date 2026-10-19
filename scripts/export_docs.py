@@ -166,6 +166,45 @@ def top_results_md(h: dict) -> list[str]:
     return out
 
 
+SCREEN_COLS = (  # key, header, better ("min" | "max"), format
+    ("fig9ab_err", "9a+9b error", "min", "{:.3f}"), ("fig9a_err", "9a error", "min", "{:.3f}"),
+    ("fig9b_err", "9b error", "min", "{:.3f}"), ("gnn_k8_over_opt", "GNN/OPT K=8", "max", "{:.2f}"),
+    ("gnn_k8", "GNN K=8", "max", "{:.2f}"), ("gnn_k1", "GNN K=1", "max", "{:.2f}"),
+    ("gnn_40dbm", "GNN 40 dBm", "max", "{:.1f}"), ("fig7_distance_m", "Fig. 7 (m)", "min", "{:.1f}"),
+)
+MEDALS = ("🥇", "🥈", "🥉")
+
+
+def screening_md(h: dict) -> list[str]:
+    """GNN screening variants of every round in one table, ranked by the Fig. 9a+9b GNN-curve error."""
+    rows = h.get("screening")
+    if not rows:
+        return []
+    paper = h.get("screening_paper", {})
+    out = ["## 🔬 Screening experiments (top results)", "",
+           "GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each, means; Fig. 7 = median). "
+           "Errors use the scorecard formula on the GNN curves of Fig. 9a/9b only (lower = closer to the paper); "
+           "the best value of each column is bold. The full-run score of a snapshot is in the table above.", "",
+           "| Rank | Round | Variant | Changes | " + " | ".join(c[1] for c in SCREEN_COLS) + " |",
+           "|---|---|---|---|" + "---|" * len(SCREEN_COLS)]
+    best = {}
+    for key, _, better, _ in SCREEN_COLS:
+        vals = [r[key] for r in rows if r.get(key) is not None]
+        best[key] = (min if better == "min" else max)(vals) if vals else None
+    for rank, r in enumerate(sorted(rows, key=lambda r: r["fig9ab_err"]), 1):
+        cells = []
+        for key, _, _, f in SCREEN_COLS:
+            v = r.get(key)
+            cells.append("-" if v is None else (f"**{f.format(v)}**" if v == best[key] else f.format(v)))
+        medal = MEDALS[rank - 1] + " " if rank <= len(MEDALS) else ""
+        out.append(f"| {medal}{rank} | {r['round']} | {esc(r['variant'])} | {esc(r['changes'])} | "
+                   + " | ".join(cells) + " |")
+    if paper:
+        out.append("| | | **paper** | | " + " | ".join(
+            (f.format(paper[k]) if k in paper else "") for k, _, _, f in SCREEN_COLS) + " |")
+    return out + [""]
+
+
 def highlights_md(h: dict) -> list[str]:
     """'Paper vs ours' table for the current best snapshot, shown right under the title."""
     hl = h.get("highlights")
@@ -189,6 +228,7 @@ def history_md(h: dict, main: list[dict]) -> str:
            "- Current parameters with provenance markers: [PARAMETERS.md](PARAMETERS.md) (machine-readable: "
            "[parameters.json](parameters.json)). Source of this history: [history.json](history.json).", ""]
     out += top_results_md(h)
+    out += screening_md(h)
     out += highlights_md(h)
     out += ["## 1. Architecture", "", "| Block | What it does | Paper |", "|---|---|---|"]
     out += [f"| **{b['block']}** | {esc(b['description'])} | {esc(b['paper'])} |" for b in h["architecture"]]
