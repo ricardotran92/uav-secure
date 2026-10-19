@@ -45,7 +45,7 @@ gnn:
   empty_aggregate: zero     # assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self
   aggregate_self: false     # assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)
   input_power_scaling: false # assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14)
-  layer_norm: layer         # assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer (R14)
+  layer_norm: layer         # assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer | out (f_out only) (R14)
   residual: true            # assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps)
 
 mlp:

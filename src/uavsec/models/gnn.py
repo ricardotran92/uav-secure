@@ -25,7 +25,7 @@ from .base import Beamformer, FeaturePReLU
 
 
 EMPTY_AGGREGATE = ("zero", "self")
-LAYER_NORMS = ("none", "layer")
+LAYER_NORMS = ("none", "layer", "out")
 
 
 def max_over_others(x: torch.Tensor, empty: str = "zero") -> torch.Tensor:
@@ -58,12 +58,14 @@ class GCNLayer(nn.Module):
     def __init__(self, in_dim: int, hidden_dim: int, out_dim: int, out_layers: int = 2,
                  aggregate_self: bool = False, layer_norm: str = "none") -> None:
         super().__init__()
-        self.f_gen = nn.Sequential(nn.Linear(in_dim, hidden_dim), *_act(hidden_dim, layer_norm))
+        # "layer": LayerNorm in f_gen and f_out; "out": only in f_out (the message m_k stays un-normalised)
+        gen_norm, out_norm = ("layer" if layer_norm == "layer" else "none"), ("none" if layer_norm == "none" else "layer")
+        self.f_gen = nn.Sequential(nn.Linear(in_dim, hidden_dim), *_act(hidden_dim, gen_norm))
         self.f_aggr = nn.Sequential(nn.Linear(hidden_dim, hidden_dim), FeaturePReLU(hidden_dim))
         # f_out is "a multilayer perceptron" (eq. (18)); its depth is not given in the paper.
-        blocks: list[nn.Module] = [nn.Linear(2 * hidden_dim, hidden_dim), *_act(hidden_dim, layer_norm)]
+        blocks: list[nn.Module] = [nn.Linear(2 * hidden_dim, hidden_dim), *_act(hidden_dim, out_norm)]
         for _ in range(out_layers - 2):
-            blocks += [nn.Linear(hidden_dim, hidden_dim), *_act(hidden_dim, layer_norm)]
+            blocks += [nn.Linear(hidden_dim, hidden_dim), *_act(hidden_dim, out_norm)]
         self.f_out = nn.Sequential(*blocks, nn.Linear(hidden_dim, out_dim))
 
         self.aggregate_self = aggregate_self                # max over N(k) u {k} instead of N(k)

@@ -125,7 +125,7 @@ def test_max_over_all():
     assert torch.equal(max_over_all(x[:, :1]), x[:, :1])
 
 
-ARCH_OPTIONS = [{"aggregate_self": True}, {"layer_norm": "layer"}, {"residual": True},
+ARCH_OPTIONS = [{"aggregate_self": True}, {"layer_norm": "layer"}, {"layer_norm": "out"}, {"residual": True},
                 {"input_power": 1.0}, {"aggregate_self": True, "layer_norm": "layer", "residual": True}]
 
 
