@@ -21,7 +21,7 @@ Main profile: 20 paper values, 4 calibrated, 27 assumptions, 30 implementation s
 | 🔴 | **`system.distance_model`** | **`horizontal`** | assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) \| horizontal = d_h | default `3d` |
 | 🔴 | **`system.min_distance_m`** | **`30`** | assumption: path-loss distance is clamped below at this value | default `1.0` |
 | 🔴 | **`system.array_axis`** | **`x`** | assumption: ULA orientation in the horizontal plane (x \| y) | default `x` |
-| 🟡 | **`gnn.hidden_dim`** | **`512`** | assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005) |  |
+| 🟡 | **`gnn.hidden_dim`** | **`768`** | assumption (paper gives no width; 128/256 under-fit; 768 collapsed without LayerNorm, works with it: R15) |  |
 | 🟡 | **`gnn.batches_per_epoch`** | **`150`** | assumption: fresh mini-batches of 512 per episode (paper: 300 episodes, batch 512; per-episode count unpublished) |  |
 | 🟡 | **`gnn.val_samples`** | **`2048`** | assumption: fixed validation set |  |
 | 🟡 | **`gnn.grad_clip`** | **`1`** | assumption: gradient-norm clipping (training diverged without it) |  |
@@ -31,7 +31,7 @@ Main profile: 20 paper values, 4 calibrated, 27 assumptions, 30 implementation s
 | 🟡 | **`gnn.out_layers`** | **`2`** | assumption: depth of the f_out MLP in each GCN layer (eq. (18)) |  |
 | 🟡 | **`gnn.init_embedding`** | **`zeros`** | assumption: e_k^(0): zeros \| mrt (h_k / \|\|h_k\|\|) |  |
 | 🟡 | **`gnn.empty_aggregate`** | **`zero`** | assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero \| self |  |
-| 🟡 | **`gnn.aggregate_self`** | **`False`** | assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1) |  |
+| 🟡 | **`gnn.aggregate_self`** | **`True`** | assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1; R15, needs layer_norm) |  |
 | 🟡 | **`gnn.input_power_scaling`** | **`False`** | assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14) |  |
 | 🟡 | **`gnn.layer_norm`** | **`layer`** | assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none \| layer \| out (f_out only) (R14) |  |
 | 🟡 | **`gnn.residual`** | **`True`** | assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps) |  |
@@ -55,21 +55,21 @@ Main profile: 20 paper values, 4 calibrated, 27 assumptions, 30 implementation s
 | `system.distance_model` | Path-loss distance: 3-D vs horizontal. | `3d`: optimum 10 m (ln, x-axis) but rate only 2.7 bps/Hz and Fig. 8 profile error 0.35<br>`horizontal`: optimum 17 m, rate 30 bps/Hz, Fig. 8 profile error 0.15 |
 | `system.array_axis` | Orientation of the ULA in the horizontal plane (the paper's Fig. 1 does not show it). | `x`: chosen<br>`y`: optimum 25 m (ln, horizontal) |
 | `system.noise_power_w` | Table I value; SNR level of the whole system. | `1.2e-13`: Table I, kept<br>`1.2e-10`: rejected: does not explain Fig. 7/8 |
-| `gnn.hidden_dim` | Capacity of the GNN; decides how closely its rate map follows the true one. | `128`: under-fits (71% of OPT)<br>`256`: 72% with constant lr, 81-82% with cosine<br>`512`: chosen: 84% with cosine<br>`1024`: collapses at lr 0.005 |
-| `gnn.batches_per_epoch` | Amount of fresh training data per epoch. | `20`: see hidden_dim<br>`50`: chosen |
+| `gnn.hidden_dim` | Capacity of the GNN; decides how closely its rate map follows the true one. | `128`: under-fits (71% of OPT)<br>`256`: 72% with constant lr, 81-82% with cosine<br>`512`: chosen: 84% with cosine<br>`1024`: collapses at lr 0.005<br>`768`: chosen with LayerNorm (R15) |
+| `gnn.batches_per_epoch` | Amount of fresh training data per epoch. | `20`: see hidden_dim<br>`50`: chosen<br>`300`: same gain as hidden 768, slower (C45) |
 | `gnn.grad_clip` | Training stability at lr 0.005. | `none`: collapsed near epoch 125<br>`1.0`: stable, chosen |
 | `sac.reward_scale` | Critic conditioning (reward magnitude about 15-28). | `1.0`: SAC degraded after about 100 episodes<br>`0.1`: chosen |
 | `sac.obs_transform` | Channel features span decades. | `linear`: unstable SAC<br>`log`: chosen |
 | `sac.max_step_m / sac.episode_length` | Step size and horizon; decide how directly the UAV can fly to the optimum (the paper's trajectory is straighter than ours). | `5 m / 100`: 20 m from optimum, jitter about 5 m<br>`5 m / 200`: 13.4 m<br>`2.5 m / 100`: cannot reach the optimum<br>`2.5 m / 200 (1 grad step)`: 56.9 m<br>`2.5 m / 175 (2 grad steps)`: chosen: 3.9 m, jitter 1.0 m |
 | `eval.search_beamformer` | Which beamformer defines the 'optimal' deployment. | `opt`: reference only<br>`gnn`: chosen: constraint (24) |
 | `gnn.lr_schedule` | Learning-rate schedule (Table I fixes only the value 0.005). | `constant`: plateau at about 72% of OPT<br>`cosine`: chosen (user-approved): 77-84% |
-| `system.min_distance_m` | Lower clamp of the path-loss distance; decides whether unphysical spikes appear right above users. | `1`: spikes; better GNNs jump onto them (37-80 m off)<br>`20`: chosen: 7-11 m (3 seeds), 0 m with hidden 512<br>`50`: optimum 33 m off<br>`100`: flat, 37 m off |
+| `system.min_distance_m` | Lower clamp of the path-loss distance; decides whether unphysical spikes appear right above users. | `1`: spikes; better GNNs jump onto them (37-80 m off)<br>`20`: chosen: 7-11 m (3 seeds), 0 m with hidden 512<br>`50`: optimum 33 m off<br>`100`: flat, 37 m off<br>`25`: R15b alternative (Fig. 8/6 better, 9b worse) |
 | `sac.gradient_steps` | Sample efficiency of SAC. | `1`: 20 m from optimum<br>`2`: chosen |
 | `gnn.input_transform` | Channel dynamic range. | `linear`: chosen<br>`log`: no gain (256) or broken (512) |
 | `gnn.uav_near_user_frac` | Training distribution of the UAV position. | `0.0`: chosen<br>`0.5`: no gain |
-| `gnn.layer_norm / gnn.residual` | Normalization block of Fig. 2; depth of the GCN stack. | `none / false`: R13<br>`layer / false`: K = 1 drops<br>`none / true`: worse (0.79 x OPT)<br>`layer / true`: chosen (0.93 x OPT at K = 8, K = 1 drops) |
+| `gnn.layer_norm / gnn.residual` | Normalization block of Fig. 2; depth of the GCN stack. | `none / false`: R13<br>`layer / false`: K = 1 drops<br>`none / true`: worse (0.79 x OPT)<br>`layer / true`: chosen (0.93 x OPT at K = 8, K = 1 drops)<br>`out / true`: K = 1 worse (C42) |
 | `gnn.input_power_scaling` | Whether the GNN input depends on the test power (eq. (12)). | `True`: R13<br>`False`: chosen (Fig. 9b error halved) |
-| `gnn.aggregate_self` | Aggregate defined at K = 1. | `False`: chosen<br>`True`: worse |
+| `gnn.aggregate_self` | Aggregate defined at K = 1. | `False`: R14 (better without LayerNorm, C36)<br>`True`: chosen with LayerNorm (K = 1: 1.31 -> 2.93, C43) |
 
 ## Main profile (calibrated), all parameters
 
@@ -93,7 +93,7 @@ Main profile: 20 paper values, 4 calibrated, 27 assumptions, 30 implementation s
 | 🔴 | `system.min_distance_m` | `30` |  |
 | 🔴 | `system.array_axis` | `x` |  |
 | 🟢 | `gnn.num_layers` | `5` | `5` ✓ |
-| 🟡 | `gnn.hidden_dim` | `512` |  |
+| 🟡 | `gnn.hidden_dim` | `768` |  |
 | 🟢 | `gnn.lr` | `0.005` | `0.005` ✓ |
 | 🟢 | `gnn.epochs` | `300` | `300` ✓ |
 | 🟢 | `gnn.batch_size` | `512` | `512` ✓ |
@@ -110,7 +110,7 @@ Main profile: 20 paper values, 4 calibrated, 27 assumptions, 30 implementation s
 | 🟡 | `gnn.out_layers` | `2` |  |
 | 🟡 | `gnn.init_embedding` | `zeros` |  |
 | 🟡 | `gnn.empty_aggregate` | `zero` |  |
-| 🟡 | `gnn.aggregate_self` | `False` |  |
+| 🟡 | `gnn.aggregate_self` | `True` |  |
 | 🟡 | `gnn.input_power_scaling` | `False` |  |
 | 🟡 | `gnn.layer_norm` | `layer` |  |
 | 🟡 | `gnn.residual` | `True` |  |

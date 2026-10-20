@@ -1,9 +1,9 @@
 # Model and parameter history
 
 _Reproduction of Tang et al., 'Deep Graph Reinforcement Learning for UAV-Enabled Multi-User Secure Communications' (IEEE TMC 2025)_  
-Updated 2026-10-19.
+Updated 2026-10-20.
 
-- **Main profile:** configs/default.yaml + configs/calibrated.yaml  ->  outputs/runs_calibrated/ (R14; earlier: outputs/archive_r13/, archive_r12/, archive_r11/, archive_r7/)
+- **Main profile:** configs/default.yaml + configs/calibrated.yaml  ->  outputs/runs_calibrated/ (R15; earlier: outputs/archive_r14/, archive_r13/, archive_r12/, archive_r11/, archive_r7/)
 - **Reference profile:** configs/default.yaml (Table I as printed)  ->  outputs/runs/
 - Current parameters with provenance markers: [PARAMETERS.md](PARAMETERS.md) (machine-readable: [parameters.json](parameters.json)). Source of this history: [history.json](history.json).
 
@@ -13,33 +13,39 @@ Paper-match score from `scripts/paper_scorecard.py` (weighted error over Figs. 4
 
 | Rank | Snapshot | Score | Status | What | Location |
 |---|---|---|---|---|---|
-| 1 | **R14** | **0.097** | ⭐ current | R13 + LayerNorm/residual GCN layers + power-independent features | `outputs/runs_calibrated/` |
-| 2 | R14-S2 | **0.105** | 🔁 alternative | R13 + power-independent features only | `outputs/archive_r14_s2/` |
-| 3 | R13 | **0.109** | 📦 archived | R12 + 30 m minimum path-loss distance | `outputs/archive_r13/` |
-| 4 | R13b | **0.110** | 🔁 alternative | R12 + 25 m minimum path-loss distance | `outputs/archive_r13b/runs_calibrated/` |
-| 5 | R7+swap | **0.145** | 🔬 ablation | R7 with the swapped U5/U6 pairing (deployment-only ablation, C21) | `outputs/tune_v4/C1_swap/` |
-| 6 | R12 | **0.153** | 📦 archived | R11 + 150 batches/episode + no reward scaling (paper) + 128-draw search | `outputs/archive_r12/runs_calibrated/` |
-| 7 | R11 | **0.154** | 📦 archived | R7 + GNN trained with the UAV at the area centre (paper setup) | `outputs/archive_r11/runs_calibrated/` |
-| 8 | R7 | **0.157** | 📦 archived | Calibrated channel + GNN 512/cosine + tuned SAC | `outputs/archive_r7/runs_calibrated/` |
-| 9 | R10 | **0.163** | ✖ rejected | R7 + swap + 50% centre-biased training | `outputs/archive_r10/runs_calibrated/` |
-| 10 | R9 | **0.167** | ✖ rejected | R7 + swap + 80% centre-biased training + MRT init | `outputs/archive_r9/runs_calibrated/` |
-| 11 | R8 | **2.301** | 📏 reference | Table I as printed (log10, 3-D distance), R7 settings | `outputs/archive_r7/runs/` |
+| 1 | **R15** | **0.083** | ⭐ current | R14 + aggregate over N(k) u {k} + hidden 768 | `outputs/runs_calibrated/` |
+| 2 | R15b | **0.087** | 🔁 alternative | R15 + 25 m minimum path-loss distance | `outputs/archive_r15b/` |
+| 3 | R15a | **0.096** | 🔬 ablation | R14 + aggregate over N(k) u {k} | `outputs/archive_r15a/` |
+| 4 | R14 | **0.097** | 📦 archived | R13 + LayerNorm/residual GCN layers + power-independent features | `outputs/archive_r14/` |
+| 5 | R14-S2 | **0.105** | 🔁 alternative | R13 + power-independent features only | `outputs/archive_r14_s2/` |
+| 6 | R13 | **0.109** | 📦 archived | R12 + 30 m minimum path-loss distance | `outputs/archive_r13/` |
+| 7 | R13b | **0.110** | 🔁 alternative | R12 + 25 m minimum path-loss distance | `outputs/archive_r13b/runs_calibrated/` |
+| 8 | R7+swap | **0.145** | 🔬 ablation | R7 with the swapped U5/U6 pairing (deployment-only ablation, C21) | `outputs/tune_v4/C1_swap/` |
+| 9 | R12 | **0.153** | 📦 archived | R11 + 150 batches/episode + no reward scaling (paper) + 128-draw search | `outputs/archive_r12/runs_calibrated/` |
+| 10 | R11 | **0.154** | 📦 archived | R7 + GNN trained with the UAV at the area centre (paper setup) | `outputs/archive_r11/runs_calibrated/` |
+| 11 | R7 | **0.157** | 📦 archived | Calibrated channel + GNN 512/cosine + tuned SAC | `outputs/archive_r7/runs_calibrated/` |
+| 12 | R10 | **0.163** | ✖ rejected | R7 + swap + 50% centre-biased training | `outputs/archive_r10/runs_calibrated/` |
+| 13 | R9 | **0.167** | ✖ rejected | R7 + swap + 80% centre-biased training + MRT init | `outputs/archive_r9/runs_calibrated/` |
+| 14 | R8 | **2.301** | 📏 reference | Table I as printed (log10, 3-D distance), R7 settings | `outputs/archive_r7/runs/` |
 
 **Best snapshot per figure** (excluding the Table I reference):
 
-| Figure | Best | Error | Current (R14) |
+| Figure | Best | Error | Current (R15) |
 |---|---|---|---|
-| fig4 | R12 | 0.072 | 0.079 |
-| fig5 | **R14** | 0.072 | 0.072 |
-| fig6 | R11 | 0.003 | 0.063 |
+| fig4 | R15b | 0.063 | 0.089 |
+| fig5 | R15b | 0.056 | 0.080 |
+| fig6 | R11 | 0.003 | 0.064 |
 | fig7_optimum | R7+swap | 0.057 | 0.126 |
-| fig7_sac | R7+swap | 0.060 | 0.143 |
-| fig8 | R10 | 0.153 | 0.225 |
-| fig9a | R7 | 0.055 | 0.084 |
-| fig9b | **R14** | 0.048 | 0.048 |
-| fig9c | **R14** | 0.038 | 0.038 |
+| fig7_sac | **R15** | 0.017 | 0.017 |
+| fig8 | R10 | 0.153 | 0.236 |
+| fig9a | R15b | 0.051 | 0.065 |
+| fig9b | R14 | 0.048 | 0.048 |
+| fig9c | R14 | 0.038 | 0.038 |
 | fig10 | R12 | 0.023 | 0.056 |
 
+- R15: single SAC seed 0.083 (lucky Fig. 7 SAC endpoint); 3 SAC seeds 0.095, still the best.
+- R15b: 3 SAC seeds 0.096; best on Figs. 4/5/6/8/9a/10, worst Fig. 9b.
+- R14: 3 SAC seeds: 0.0985.
 - R13b: Tied with R13 within noise; better on Figs. 4/6/8/10 and on the Graph-DRL gain (+33%), worse on Figs. 5/9b.
 - R7+swap: Not a full run: Figs. 4/5/9/10 copied from R7 (they do not depend on the pairing). The user keeps the original pairing. Measured on R7; not re-measured on R12.
 
@@ -49,36 +55,41 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 
 | Rank | Round | Variant | Changes | 9a+9b error | 9a error | 9b error | GNN/OPT K=8 | GNN K=8 | GNN K=1 | GNN 40 dBm | Fig. 7 (m) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 🥇 1 | R14 | s4a_lnres_fixedpower | C37+C40 (= R14) | **0.169** | **0.105** | **0.065** | **0.93** | **13.96** | 1.31 | **20.9** | **6.3** |
-| 🥈 2 | R14 | s4b_lnres_fixedpower_self | C37+C40, K=1 self rule (C41) | 0.179 | 0.114 | **0.065** | **0.93** | **13.96** | 0.91 | **20.9** | **6.3** |
-| 🥉 3 | R14 | s2_fixedpower | C37 power-independent input | 0.190 | 0.106 | 0.084 | 0.90 | 13.47 | 2.49 | 19.6 | **6.3** |
-| 4 | R14 | base | R13 settings | 0.274 | 0.106 | 0.169 | 0.90 | 13.47 | 2.49 | 20.2 | **6.3** |
-| 5 | R14 | s1_aggself | C36 aggregate N(k)+self | 0.275 | 0.115 | 0.160 | 0.88 | 13.21 | **2.49** | 19.5 | 8.0 |
-| 6 | R14 | s3c_lnres | C40 LayerNorm+residual | 0.278 | **0.105** | 0.173 | **0.93** | **13.96** | 1.31 | 20.6 | **6.3** |
-| 7 | R14 | s3a_ln | C38 LayerNorm | 0.291 | 0.120 | 0.171 | 0.91 | 13.58 | 1.40 | 20.0 | **6.3** |
-| 8 | R14 | s3b_res | C39 residual | 0.441 | 0.248 | 0.193 | 0.79 | 11.75 | 1.65 | 16.7 | 7.2 |
+| 🥇 1 | R15 | t2_aggself | C43 R14 + aggregate N(k)+self | **0.147** | **0.074** | 0.073 | 0.92 | 13.74 | **2.93** | 20.4 | **6.3** |
+| 🥈 2 | R15 | t3_h768 | C44 R14 + hidden 768 | 0.159 | 0.100 | **0.059** | **0.94** | **14.14** | 1.28 | **21.4** | 8.0 |
+| 🥉 3 | R15 | t4_b300 | C45 R14 + 300 batches/episode | 0.160 | 0.098 | 0.061 | 0.94 | 14.07 | 1.40 | 21.2 | 10.8 |
+| 4 | R14 | s4a_lnres_fixedpower | C37+C40 (= R14) | 0.169 | 0.105 | 0.065 | 0.93 | 13.96 | 1.31 | 20.9 | **6.3** |
+| 5 | R14 | s4b_lnres_fixedpower_self | C37+C40, K=1 self rule (C41) | 0.179 | 0.114 | 0.065 | 0.93 | 13.96 | 0.91 | 20.9 | **6.3** |
+| 6 | R14 | s2_fixedpower | C37 power-independent input | 0.190 | 0.106 | 0.084 | 0.90 | 13.47 | 2.49 | 19.6 | **6.3** |
+| 7 | R15 | t1_lnout | C42 R14, LayerNorm in f_out only | 0.191 | 0.127 | 0.064 | 0.94 | 14.02 | 0.95 | 21.1 | 8.0 |
+| 8 | R14 | base | R13 settings | 0.274 | 0.106 | 0.169 | 0.90 | 13.47 | 2.49 | 20.2 | **6.3** |
+| 9 | R14 | s1_aggself | C36 aggregate N(k)+self | 0.275 | 0.115 | 0.160 | 0.88 | 13.21 | 2.49 | 19.5 | 8.0 |
+| 10 | R14 | s3c_lnres | C40 LayerNorm+residual | 0.278 | 0.105 | 0.173 | 0.93 | 13.96 | 1.31 | 20.6 | **6.3** |
+| 11 | R14 | s3a_ln | C38 LayerNorm | 0.291 | 0.120 | 0.171 | 0.91 | 13.58 | 1.40 | 20.0 | **6.3** |
+| 12 | R14 | s3b_res | C39 residual | 0.441 | 0.248 | 0.193 | 0.79 | 11.75 | 1.65 | 16.7 | 7.2 |
 | | | **paper** | | 0.000 | 0.000 | 0.000 | 0.95 | 14.79 | 3.86 | 23.8 | 0.0 |
 
-## ⭐ Highlights: paper vs ours (snapshot R14, current best)
+## ⭐ Highlights: paper vs ours (snapshot R15, current best)
 
-**8 match · 4 close · 2 gap.** Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Score: R14 0.097, R14-S2 0.105, R13 0.109, R13b 0.110, R12 0.153, R11 0.154, R7 0.157.
+**7 match · 6 close · 2 gap.** Paper values digitised at 400 dpi (configs/paper_reference.yaml). Status: match = within reading accuracy, close = same behaviour and within about 15%, gap = clear difference. Score (1 SAC seed / 3 SAC seeds): R15 0.083 / 0.095, R15b 0.087 / 0.096, R14 0.097 / 0.0985, R13 0.109.
 
 | Figure | Metric | Paper | Ours | Status |
 |---|---|---|---|---|
 | Fig. 9b | OPT vs transmit power (-20 / -10 / 0 / 10 / 20 / 30 / 40 dBm) | 0 / 0.19 / 1.0 / 3.2 / 7.5 / 15.8 / 28.0 | **0.02 / 0.15 / 0.94 / 3.2 / 7.5 / 15.0 / 26.4** | ✅ match |
 | Fig. 9c | OPT vs noise power (0.3 / 1.2 / 9.6 x 1e-13 W) | 21.5 / 15.7 / 7.6 | **21.4 / 15.0 / 8.1** | ✅ match |
 | Fig. 9a | OPT at K = 1 / 4 / 8 / 11 | 4.3 / 10.9 / 15.5 / 18.2 | **3.7 / 10.1 / 15.0 / 17.4** | ✅ match |
-| Fig. 8 | Graph-DRL secrecy rate at the learned deployment | 23 | **23.8** | ✅ match |
-| Fig. 7 | Search optimum to the paper's optimum (56, 140) | 0 m | **6.3 m (screening GNN seeds: 6.3 / 8.0 / 6.3 m)** | ✅ match |
-| Fig. 7 | SAC endpoint to the search optimum | about 3 m | **3.4 m (R14, 1 SAC seed; R13 3 seeds: 3.3 / 5.4 / 8.6 m)** | ✅ match |
-| Fig. 5 | K = 12 final loss: transfer / re-training | -18.0 / -17.7 | **-16.8 / -16.3** | ✅ match |
+| Fig. 8 | Graph-DRL secrecy rate at the learned deployment | 23 | **23.7** | ✅ match |
+| Fig. 7 | Search optimum to the paper's optimum (56, 140) | 0 m | **6.3 m (3 GNN seeds: 7.2 / 6.3 / 6.3 m)** | ✅ match |
+| Fig. 5 | K = 12 final loss: transfer / re-training | -18.0 / -17.7 | **-16.8 / -16.1** | ✅ match |
 | Fig. 9a | GNN at K = 8 / K = 11 | 14.8 / 16.1 | **14.0 / 16.2** | ✅ match |
-| Fig. 9b | GNN vs transmit power (10 / 20 / 30 / 40 dBm) | 2.0 / 7.0 / 14.6 / 23.8 | 2.2 / 6.7 / 14.0 / 21.0 | 🟡 close |
-| Fig. 10 | Median sum secrecy rate K = 8 / 12, OPT (GNN) | 16.0 / 19.5 (15.0 / 17.5) | 15.1 / 18.3 (14.1 / 16.7) | 🟡 close |
-| Fig. 6 | SAC final episode reward / secrecy rate | 4400 / 25 | 4110 / 23.5 | 🟡 close |
-| Fig. 4 | Final training loss GNN (MLP) | -14.9 (-5.0) | -13.7 (-9.5) | 🟡 close |
-| Fig. 9 | GNN / OPT ratio across K | 0.84-0.97 (0.95 at K = 8) | 0.35-0.95 (0.94 at K = 8; K = 1 only 0.35) | ⚠️ gap |
-| Fig. 8 | Heuristic rate / Graph-DRL (Graph-DRL gain) | 0.39-0.61 (+64%) | 0.68-0.85 (+18%) | ⚠️ gap |
+| Fig. 7 | SAC endpoint to the search optimum | about 3 m | 3.4 / 9.1 / 2.1 m (3 SAC seeds) | 🟡 close |
+| Fig. 9b | GNN vs transmit power (10 / 20 / 30 / 40 dBm) | 2.0 / 7.0 / 14.6 / 23.8 | 2.2 / 6.7 / 14.0 / 21.1 | 🟡 close |
+| Fig. 10 | Median sum secrecy rate K = 8 / 12, OPT (GNN) | 16.0 / 19.5 (15.0 / 17.5) | 15.1 / 18.3 (14.1 / 16.8) | 🟡 close |
+| Fig. 6 | SAC final episode reward / secrecy rate | 4400 / 25 | 4108 / 23.5 (3 seeds 4010-4108) | 🟡 close |
+| Fig. 4 | Final training loss GNN (MLP) | -14.9 (-5.0) | -13.6 (-9.5) | 🟡 close |
+| Fig. 9 | GNN / OPT ratio across K | 0.84-0.97 (0.95 at K = 8) | 0.80-0.95 (0.94 at K = 8; 0.80 at K = 1) | 🟡 close |
+| Fig. 8 | Heuristic rate / Graph-DRL (Graph-DRL gain) | 0.39-0.61 (+64%) | 0.69-0.87 (+15%; R15b +26%) | ⚠️ gap |
+| Fig. 9a | GNN at K = 1 (single user) | 3.86 | 2.93 (R14 1.27, R13 2.53) | ⚠️ gap |
 
 ## 1. Architecture
 
@@ -104,7 +115,7 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 - 🔴 `system.distance_model` = **`horizontal`** - assumption: path-loss distance, 3d = sqrt(d_h^2 + H^2) | horizontal = d_h
 - 🔴 `system.min_distance_m` = **`30`** - assumption: path-loss distance is clamped below at this value
 - 🔴 `system.array_axis` = **`x`** - assumption: ULA orientation in the horizontal plane (x | y)
-- 🟡 `gnn.hidden_dim` = **`512`** - assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)
+- 🟡 `gnn.hidden_dim` = **`768`** - assumption (paper gives no width; 128/256 under-fit; 768 collapsed without LayerNorm, works with it: R15)
 - 🟡 `gnn.batches_per_epoch` = **`150`** - assumption: fresh mini-batches of 512 per episode (paper: 300 episodes, batch 512; per-episode count unpublished)
 - 🟡 `gnn.val_samples` = **`2048`** - assumption: fixed validation set
 - 🟡 `gnn.grad_clip` = **`1`** - assumption: gradient-norm clipping (training diverged without it)
@@ -114,7 +125,7 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 - 🟡 `gnn.out_layers` = **`2`** - assumption: depth of the f_out MLP in each GCN layer (eq. (18))
 - 🟡 `gnn.init_embedding` = **`zeros`** - assumption: e_k^(0): zeros | mrt (h_k / ||h_k||)
 - 🟡 `gnn.empty_aggregate` = **`zero`** - assumption: eq. (16) aggregate when a node has no neighbours (K = 1): zero | self
-- 🟡 `gnn.aggregate_self` = **`False`** - assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)
+- 🟡 `gnn.aggregate_self` = **`True`** - assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1; R15, needs layer_norm)
 - 🟡 `gnn.input_power_scaling` = **`False`** - assumption: node features fixed at P^max (false; eq. (12) has no power term) or scaled by sqrt(P) at the test power (true) (R14)
 - 🟡 `gnn.layer_norm` = **`layer`** - assumption: normalisation before each PReLU of f_gen / f_out (Fig. 2 'Normalization'): none | layer | out (f_out only) (R14)
 - 🟡 `gnn.residual` = **`True`** - assumption: e_k <- e_k + f_out(c_k) across GCN layers (R14; alone it fails, with layer_norm it helps)
@@ -132,10 +143,10 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 
 **Main-profile results:**
 
-- GNN 11.34 +- 0.09 vs MLP 8.19 +- 0.05 bps/Hz (validation).
-- K=8, 1 W: GNN 14.03 / OPT 14.98 / MLP 9.63 bps/Hz (GNN = 94% of OPT).
+- GNN 11.21 +- 0.14 vs MLP 8.19 +- 0.05 bps/Hz (validation).
+- K=8, 1 W: GNN 14.01 / OPT 14.98 / MLP 9.63 bps/Hz (GNN = 94% of OPT).
 - Fig. 7 optimum (62, 142) vs paper (56, 140): **6.3 m**; SAC ends 3.4 m from the optimum.
-- Graph-DRL reaches 99.3% of the optimum, +18% over the best heuristic.
+- Graph-DRL reaches 98.2% of the optimum, +15% over the best heuristic.
 
 ## 3. Timeline of changes
 
@@ -182,6 +193,12 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 | C39 | gnn | Residual embedding update alone (gnn.residual = true) | ✖ rejected |
 | C40 | gnn | LayerNorm + residual in every GCN layer (R14) | ✅ active |
 | C41 | gnn | K = 1 'self' aggregate at inference on the R14 network | ✖ rejected |
+| C42 | gnn | LayerNorm in f_out only (gnn.layer_norm = out) | ✖ rejected |
+| C43 | gnn | Aggregate over N(k) u {k} on the LayerNorm network (gnn.aggregate_self = true) | ✅ active |
+| C44 | gnn | GNN hidden width 768 (with LayerNorm) | ✅ active |
+| C45 | gnn | 300 mini-batches per GNN episode | ✖ rejected |
+| C46 | system_model | Minimum path-loss distance 25 m on the R15 network (R15b) | ✖ rejected |
+| C47 | evaluation | Selection over 3 SAC seeds | ✅ active |
 
 ### C01 - Project scaffold, typed YAML configuration, run directories  ·  ✅ active
 
@@ -494,6 +511,51 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 - **After:** Kept 'zero'.
 - **Why:** Try to recover the K = 1 drop of C40 without retraining.
 - **Evidence:** Eval-only on the 3 C40+C37 checkpoints: GNN K=1 1.32 -> 0.91, 9a 0.105 -> 0.114. Worse.
+
+### C42 - LayerNorm in f_out only (gnn.layer_norm = out)  ·  ✖ rejected
+
+- **Before:** LayerNorm in f_gen and f_out (R14).
+- **After:** Option kept; not used.
+- **Why:** Hypothesis: the K = 1 drop of R14 comes from normalising the message m_k.
+- **Evidence:** Screening R15 (outputs/studies_r15/, 3 GNN seeds on top of R14; R14 = 9a 0.105, 9b 0.065, K=8 0.93 x OPT, GNN K=1 1.31, 40 dBm 20.9, Fig. 7 6.3 m): GNN K=1 0.95 (worse), 9a 0.127, Fig. 7 8.0 m.
+- **Commits:** `1dd88b9`, `5bed348`
+
+### C43 - Aggregate over N(k) u {k} on the LayerNorm network (gnn.aggregate_self = true)  ·  ✅ active
+
+- **Before:** max over N(k); zero aggregate at K = 1 (C36 rejected it on the R13 network).
+- **After:** gnn.aggregate_self = true (configs/default.yaml).
+- **Why:** With LayerNorm the zero aggregate at K = 1 is far out of the training distribution; including the node keeps the aggregate defined and in range.
+- **Evidence:** Screening R15 (outputs/studies_r15/, 3 GNN seeds on top of R14; R14 = 9a 0.105, 9b 0.065, K=8 0.93 x OPT, GNN K=1 1.31, 40 dBm 20.9, Fig. 7 6.3 m): GNN K=1 1.31 -> 2.93 (paper 3.86), 9a 0.105 -> 0.074 (best of both rounds), 9b 0.073, K=8 0.92, Fig. 7 6.3 m. Full run R15a (this alone) 0.096.
+- **Commits:** `1dd88b9`, `5bed348`
+
+### C44 - GNN hidden width 768 (with LayerNorm)  ·  ✅ active
+
+- **Before:** 512 (768/1024 collapsed at lr 0.005 without normalisation, C33).
+- **After:** gnn.hidden_dim = 768 (configs/default.yaml).
+- **Why:** LayerNorm removes the collapse, so the extra capacity can be used.
+- **Evidence:** Screening R15 (outputs/studies_r15/, 3 GNN seeds on top of R14; R14 = 9a 0.105, 9b 0.065, K=8 0.93 x OPT, GNN K=1 1.31, 40 dBm 20.9, Fig. 7 6.3 m): K=8 0.944 x OPT (14.14), 9a 0.100, 9b 0.059, 40 dBm 21.4, Fig. 7 8.0 m. With C43: full run R15 0.083 (1 SAC seed), 0.095 over 3 SAC seeds.
+- **Commits:** `1dd88b9`, `5bed348`
+
+### C45 - 300 mini-batches per GNN episode  ·  ✖ rejected
+
+- **Before:** 150.
+- **After:** Kept 150.
+- **Why:** More data per episode (count not published).
+- **Evidence:** Screening R15 (outputs/studies_r15/, 3 GNN seeds on top of R14; R14 = 9a 0.105, 9b 0.065, K=8 0.93 x OPT, GNN K=1 1.31, 40 dBm 20.9, Fig. 7 6.3 m): like C44 (K=8 0.94, 9a 0.098, 9b 0.061) but 20% slower and Fig. 7 median 10.8 m; C44 kept instead.
+
+### C46 - Minimum path-loss distance 25 m on the R15 network (R15b)  ·  ✖ rejected
+
+- **Before:** 30 m.
+- **After:** Kept 30 m; R15b archived as the alternative.
+- **Why:** Fig. 8/6 gap (Graph-DRL gain +15% vs +64% in the paper).
+- **Evidence:** Full run R15b: Fig. 4 0.063, 5 0.056, 6 0.026 (reward 4276, paper 4400), 8 0.204 (gain +26%), 9a 0.051, 10 0.033 all better than R15, but 9b 0.128 (OPT 1.35 at 0 dBm vs paper 1.0). Total 0.087 (1 seed), 0.096 over 3 SAC seeds vs R15 0.095.
+
+### C47 - Selection over 3 SAC seeds  ·  ✅ active
+
+- **Before:** One SAC seed per full run (R14 and earlier, except R13's robustness seeds).
+- **After:** Candidates are compared with the deployment items averaged over 3 SAC seeds (exp_deployment.py --gnn <ckpt> --set seed=1|2).
+- **Why:** Fig. 7 SAC alone moved R15 from 0.096 to 0.083 with one lucky seed (endpoint 0.9 m from the paper's).
+- **Evidence:** 3-seed totals: R15 0.095, R15b 0.096, R14 0.0985 (single-seed 0.083 / 0.087 / 0.097).
 
 ## 4. Result snapshots
 
@@ -1293,7 +1355,7 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 }
 ```
 
-### ⭐ CURRENT BEST - R14 - FINAL main profile v7 (R13 + LayerNorm/residual GCN layers + power-independent features)
+### R14 - Main profile v7 (archived in outputs/archive_r14/)
 
 ```json
 {
@@ -1359,13 +1421,45 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
       "Circumcenter": 16.58,
       "Polygon centroid": 16.61,
       "Exhaustive search": 24.01
-    }
+    },
+    "sac_seeds": [
+      {
+        "seed": 0,
+        "to_paper_end": 7.1,
+        "to_opt": 3.4,
+        "vs_opt": 99.3,
+        "vs_heur": 18.1
+      },
+      {
+        "seed": 1,
+        "end": [
+          69.2,
+          138.0
+        ],
+        "to_paper_end": 11.9,
+        "to_opt": 8.3,
+        "vs_opt": 97.9,
+        "vs_heur": 16.6
+      },
+      {
+        "seed": 2,
+        "end": [
+          61.2,
+          144.1
+        ],
+        "to_paper_end": 3.8,
+        "to_opt": 2.2,
+        "vs_opt": 99.8,
+        "vs_heur": 19.0
+      }
+    ]
   },
   "fig6": {
     "episode_reward": 4110,
     "secrecy_rate": 23.5
   },
-  "location": "outputs/runs_calibrated/ (R13 archived in outputs/archive_r13/; reference profile outputs/runs/ not re-run)"
+  "location": "outputs/archive_r14/",
+  "scorecard_total_3_sac_seeds": 0.0985
 }
 ```
 
@@ -1391,11 +1485,223 @@ GNN variants screened with `scripts/server/screen_gnn.sh` (3 training seeds each
 }
 ```
 
+### ⭐ CURRENT BEST - R15 - FINAL main profile v8 (R14 + aggregate over N(k) u {k} + hidden 768)
+
+```json
+{
+  "after_changes": [
+    "C01-C20",
+    "C25",
+    "C27",
+    "C28",
+    "C31",
+    "C32",
+    "C35",
+    "C37",
+    "C40",
+    "C43",
+    "C44"
+  ],
+  "scorecard_total": 0.083,
+  "scorecard_total_3_sac_seeds": 0.095,
+  "scorecard": {
+    "fig4": 0.089,
+    "fig5": 0.08,
+    "fig6": 0.064,
+    "fig7_optimum": 0.126,
+    "fig7_sac": 0.017,
+    "fig8": 0.236,
+    "fig9a": 0.065,
+    "fig9b": 0.048,
+    "fig9c": 0.038,
+    "fig10": 0.056
+  },
+  "scorecard_3_sac_seeds": {
+    "fig6": 0.071,
+    "fig7_optimum": 0.126,
+    "fig7_sac": 0.128,
+    "fig8": 0.24
+  },
+  "convergence": {
+    "gnn_val": "11.21 +- 0.14",
+    "gnn_final_loss": "-13.57 +- 0.13",
+    "mlp_val": "8.19 +- 0.05",
+    "transfer_8_to_12": "14.07 vs re-training 13.45 (loss -16.8 vs -16.1)"
+  },
+  "beamforming_K8_1W": {
+    "GNN": 14.01,
+    "OPT": 14.98,
+    "MLP": 9.63
+  },
+  "gnn_over_opt": {
+    "K=1": 0.8,
+    "K=4": 0.95,
+    "K=8": 0.94,
+    "K=11": 0.93,
+    "40 dBm": 0.8
+  },
+  "deployment": {
+    "optimum_gnn": [
+      62,
+      142
+    ],
+    "paper_optimum": [
+      56,
+      140
+    ],
+    "optimum_distance_to_paper_m": 6.3,
+    "sac_seeds": [
+      {
+        "seed": 0,
+        "end": [
+          58.7,
+          142.6
+        ],
+        "to_opt": 3.4,
+        "to_paper_end": 0.9,
+        "vs_opt": 98.2,
+        "vs_heur": 14.7
+      },
+      {
+        "seed": 1,
+        "end": [
+          71.1,
+          141.9
+        ],
+        "to_opt": 9.1,
+        "to_paper_end": 13.1,
+        "vs_opt": 95.7,
+        "vs_heur": 11.7
+      },
+      {
+        "seed": 2,
+        "end": [
+          62.9,
+          143.9
+        ],
+        "to_opt": 2.1,
+        "to_paper_end": 5.2,
+        "vs_opt": 98.8,
+        "vs_heur": 15.4
+      }
+    ],
+    "sac_to_optimum_m": 3.4,
+    "graph_drl_vs_optimum_pct": 98.2,
+    "graph_drl_gain_over_best_heuristic_pct": 14.7,
+    "rates_bps_hz": {
+      "Graph-DRL": 23.67,
+      "Area center": 16.38,
+      "Geometric center": 20.64,
+      "Circumcenter": 16.55,
+      "Polygon centroid": 16.68,
+      "Exhaustive search": 24.11
+    }
+  },
+  "fig6": {
+    "episode_reward": 4108,
+    "secrecy_rate": 23.5,
+    "3_seed_reward": [
+      4108,
+      4010,
+      4104
+    ]
+  },
+  "location": "outputs/runs_calibrated/ (extra SAC seeds: outputs/sac_seeds/r15_seed1|2; reference profile outputs/runs/ not re-run)"
+}
+```
+
+### R15a - Ablation: R14 + aggregate over N(k) u {k} only (C43)
+
+```json
+{
+  "scorecard_total": 0.096,
+  "scorecard": {
+    "fig4": 0.093,
+    "fig5": 0.09,
+    "fig6": 0.085,
+    "fig7_optimum": 0.126,
+    "fig7_sac": 0.105,
+    "fig8": 0.227,
+    "fig9a": 0.07,
+    "fig9b": 0.054,
+    "fig9c": 0.043,
+    "fig10": 0.066
+  },
+  "gnn_over_opt": {
+    "K=1": 0.81,
+    "K=4": 0.93,
+    "K=8": 0.92,
+    "K=11": 0.91,
+    "40 dBm": 0.77
+  },
+  "decision": "archived (R15 better on every GNN figure)",
+  "location": "outputs/archive_r15a/"
+}
+```
+
+### R15b - Alternative: R15 + 25 m minimum path-loss distance
+
+```json
+{
+  "scorecard_total": 0.087,
+  "scorecard_total_3_sac_seeds": 0.096,
+  "scorecard": {
+    "fig4": 0.063,
+    "fig5": 0.056,
+    "fig6": 0.026,
+    "fig7_optimum": 0.144,
+    "fig7_sac": 0.08,
+    "fig8": 0.204,
+    "fig9a": 0.051,
+    "fig9b": 0.128,
+    "fig9c": 0.051,
+    "fig10": 0.033
+  },
+  "scorecard_3_sac_seeds": {
+    "fig6": 0.029,
+    "fig7_optimum": 0.132,
+    "fig7_sac": 0.169,
+    "fig8": 0.212
+  },
+  "beamforming_K8_1W": {
+    "GNN": 14.3,
+    "OPT": 15.66
+  },
+  "gnn_over_opt": {
+    "K=1": 0.74,
+    "K=4": 0.93,
+    "K=8": 0.91,
+    "K=11": 0.91,
+    "40 dBm": 0.77
+  },
+  "deployment": {
+    "graph_drl_gain_over_best_heuristic_pct": [
+      26.4,
+      24.8,
+      23.1
+    ],
+    "fig6_reward": [
+      4276,
+      4298,
+      4205
+    ],
+    "sac_to_paper_end_m": [
+      4.0,
+      8.1,
+      13.4
+    ]
+  },
+  "decision": "archived as the alternative: best on Figs. 4/5/6/8/9a/10, but Fig. 9b 0.128; 3-seed total 0.096 vs R15 0.095",
+  "location": "outputs/archive_r15b/ (SAC seeds: outputs/sac_seeds/r15b_seed1|2)"
+}
+```
+
 ## 5. Open issues
 
-- GNN reaches 93-95% of our OPT for K >= 4 (0.94 at K = 8) vs 0.84-0.97 in the paper; but K = 1 only 0.35 (R13 0.69, paper 0.91): the LayerNorm/residual network extrapolates badly to a graph with no neighbours.
-- Fig. 8: the heuristics reach 68-85% of Graph-DRL vs 39-61% in the paper (Graph-DRL itself matches: 23.8 vs 23); the gain fell from +24% (R13) to +18% because the better GNN also lifts the geometric centre.
+- GNN reaches 93-95% of our OPT for K >= 4 (0.94 at K = 8) and 0.80 at K = 1 (paper 0.84-0.97, 0.91 at K = 1).
+- Fig. 8: the heuristics reach 69-87% of Graph-DRL vs 39-61% in the paper (Graph-DRL itself matches: 23.7 vs 23); gain +15% (3 seeds 12-15%) vs +64%. The 25 m alternative R15b gives +23-26% but worsens Fig. 9b.
 - GNN at 40 dBm reaches 80% of OPT (paper 85%).
-- Fig. 6 reward is 7% below the paper (4110 vs 4400).
-- The reference profile outputs/runs/ was produced with the R12/R13 GNN settings and has not been re-run with R14.
+- Fig. 6 reward 4108 (3 seeds 4010-4108) vs 4400 in the paper; R15b 4205-4298.
+- SAC endpoint varies by seed: 2.1-9.1 m from the search optimum (one seed at 95.7% of the optimum rate).
+- The reference profile outputs/runs/ was produced with the R12/R13 GNN settings and has not been re-run since R14.
 - The 30 m clamp, the ln path loss and the horizontal distance are calibrated readings, not paper values (see source_materials/paper-parameters.md §3).

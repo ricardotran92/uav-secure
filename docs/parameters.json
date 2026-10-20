@@ -161,9 +161,9 @@
       },
       {
         "key": "gnn.hidden_dim",
-        "value": 512,
+        "value": 768,
         "source": "assumption",
-        "note": "assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)"
+        "note": "assumption (paper gives no width; 128/256 under-fit; 768 collapsed without LayerNorm, works with it: R15)"
       },
       {
         "key": "gnn.lr",
@@ -269,9 +269,9 @@
       },
       {
         "key": "gnn.aggregate_self",
-        "value": false,
+        "value": true,
         "source": "assumption",
-        "note": "assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)"
+        "note": "assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1; R15, needs layer_norm)"
       },
       {
         "key": "gnn.input_power_scaling",
@@ -736,9 +736,9 @@
       },
       {
         "key": "gnn.hidden_dim",
-        "value": 512,
+        "value": 768,
         "source": "assumption",
-        "note": "assumption (paper gives no width; 128/256 under-fit, 1024 collapses at lr 0.005)"
+        "note": "assumption (paper gives no width; 128/256 under-fit; 768 collapsed without LayerNorm, works with it: R15)"
       },
       {
         "key": "gnn.lr",
@@ -844,9 +844,9 @@
       },
       {
         "key": "gnn.aggregate_self",
-        "value": false,
+        "value": true,
         "source": "assumption",
-        "note": "assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1)"
+        "note": "assumption: eq. (16) max over N(k) (false) or N(k) u {k} (true, defined for K = 1; R15, needs layer_norm)"
       },
       {
         "key": "gnn.input_power_scaling",
@@ -1253,6 +1253,10 @@
         {
           "value": 1024,
           "outcome": "collapses at lr 0.005"
+        },
+        {
+          "value": 768,
+          "outcome": "chosen with LayerNorm (R15)"
         }
       ]
     },
@@ -1267,6 +1271,10 @@
         {
           "value": 50,
           "outcome": "chosen"
+        },
+        {
+          "value": 300,
+          "outcome": "same gain as hidden 768, slower (C45)"
         }
       ]
     },
@@ -1385,6 +1393,10 @@
         {
           "value": 100,
           "outcome": "flat, 37 m off"
+        },
+        {
+          "value": 25,
+          "outcome": "R15b alternative (Fig. 8/6 better, 9b worse)"
         }
       ]
     },
@@ -1449,6 +1461,10 @@
         {
           "value": "layer / true",
           "outcome": "chosen (0.93 x OPT at K = 8, K = 1 drops)"
+        },
+        {
+          "value": "out / true",
+          "outcome": "K = 1 worse (C42)"
         }
       ]
     },
@@ -1472,11 +1488,11 @@
       "tested": [
         {
           "value": false,
-          "outcome": "chosen"
+          "outcome": "R14 (better without LayerNorm, C36)"
         },
         {
           "value": true,
-          "outcome": "worse"
+          "outcome": "chosen with LayerNorm (K = 1: 1.31 -> 2.93, C43)"
         }
       ]
     }
